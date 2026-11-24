@@ -237,7 +237,7 @@ test('документы формируются в настоящих форма
 
 test('загружается PDF с проверкой содержимого',async()=>{
   const data=new FormData();
-  data.set('file',new File(['%PDF-1.4\nУчебный пример\n%%EOF'],'example.pdf',{type:'application/pdf'}));
+  data.set('file',new File(['%PDF-1.4\nПример PDF\n%%EOF'],'example.pdf',{type:'application/pdf'}));
   const response=await call('/api/files','POST',data,'candidate');
   assert.equal(response.status,201);
   attachment=(await response.json()).id;

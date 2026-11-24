@@ -49,6 +49,16 @@ async function fixture(t){
   return {env,DB,call,auth};
 }
 
+test('PDF проверяется по MIME, окончанию содержимого и безопасному имени',async t=>{
+  const {call,DB}=await fixture(t);
+  const send=async(content,name,type)=>{const data=new FormData();data.set('file',new File([content],name,{type}));return call('/api/files','POST',data,'candidate');};
+  assert.equal((await send('%PDF-1.7\n%%EOF','a.pdf','image/png')).status,400);
+  assert.equal((await send('%PDF-1.7\ntruncated','a.pdf','application/pdf')).status,400);
+  const response=await send('%PDF-1.7\n%%EOF','../ Отчёт ?.pdf','application/pdf');assert.equal(response.status,201);
+  const {id}=await response.json(),row=await DB.prepare('SELECT original_name FROM file_documents WHERE id=?').bind(id).first();
+  assert.equal(row.original_name.endsWith('.pdf'),true);assert.doesNotMatch(row.original_name,/^[.]|[/?]/);
+});
+
 test('параметры плана сохраняют все задания внутри периода и роль наставника',async t=>{
   const {call}=await fixture(t);const body={title:'Уточнённый план адаптации',start_date:'2026-11-23',end_date:'2026-12-23',mentor_id:'admin'};
   assert.equal((await call('/api/plan-edit/plan-1','POST',{...body,end_date:'2026-11-24'},'hr')).status,400);

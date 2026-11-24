@@ -237,11 +237,15 @@ async function uploadFile(request, env, user) {
   must(file && typeof file.arrayBuffer === 'function', 'Выберите PDF-файл.');
   must(file.size > 0 && file.size <= 2097152, 'Допустим PDF-файл до 2 МБ.', 413);
   must(file.name.toLowerCase().endsWith('.pdf'), 'Разрешены только PDF-файлы.');
+  must(!file.type||['application/pdf','application/octet-stream'].includes(file.type.toLowerCase()),'Тип файла должен соответствовать PDF.');
+  must(!/[\u0000-\u001F\u007F]/.test(file.name),'Имя файла содержит недопустимые символы.');
   const bytes = await file.arrayBuffer();
-  must(new TextDecoder().decode(bytes.slice(0, 5)) === '%PDF-', 'Содержимое файла не соответствует PDF.');
+  must(/^%PDF-[12]\.\d/.test(new TextDecoder().decode(bytes.slice(0,8)))&&
+    /%%EOF\s*$/.test(new TextDecoder().decode(bytes.slice(Math.max(0,bytes.byteLength-2048)))),'Содержимое файла не соответствует PDF.');
   const id = uid('file');
   const objectKey = `${user.id}/${id}.pdf`;
-  const filename = file.name.replace(/[^\p{L}\p{N}._ -]/gu, '_').slice(0, 150);
+  const stem=safeText(file.name.slice(0,-4),145).replace(/[^\p{L}\p{N}._ -]/gu,'_').replace(/^[. ]+|[. ]+$/g,'');
+  const filename=(stem||'document')+'.pdf';
   await env.BUCKET.put(objectKey, bytes, { httpMetadata: { contentType: 'application/pdf' } });
   try {
     await env.DB.batch([
