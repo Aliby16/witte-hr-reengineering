@@ -19,6 +19,13 @@ import { NeonAdapter, postgresParameters, postgresRows } from './neon-db.js';
 import { neonConfig } from '@neondatabase/serverless';
 import worker from './worker.js';
 
+test('метод неподходящего ресурса возвращает 405 и Allow',async()=>{
+  for(const [path,method,allow]of [['/','POST','GET, HEAD'],['/api/me','POST','GET, HEAD'],['/api/login','GET','POST'],['/api/profile','DELETE','GET, HEAD, POST']]){
+    const response=await worker.fetch(new Request('http://localhost'+path,{method}),{});
+    assert.equal(response.status,405);assert.equal(response.headers.get('allow'),allow);
+  }
+});
+
 test('HEAD возвращает статус и заголовки GET без тела',async()=>{
   for(const path of ['/','/assets/styles.css','/assets/client.js','/missing','/app/dashboard']){
     const get=await worker.fetch(new Request('http://localhost'+path),{});

@@ -1,6 +1,6 @@
 import { AppError, json, responseHeaders } from './security.js';
 import { readSession } from './db.js';
-import { handleApi } from './api.js';
+import { handleApi, allowedApiMethods } from './api.js';
 import { renderShell } from './ui.js';
 import { STYLES } from './styles.js';
 import { CLIENT } from './client.js';
@@ -18,8 +18,12 @@ const worker = {
     const url = new URL(request.url);
     try {
       if (env.DATABASE_URL) env={...env,DB:new NeonAdapter(env.DATABASE_URL)};
-      if (url.pathname.startsWith('/api/')) return await handleApi(request, env);
-      if (request.method !== 'GET' && request.method !== 'HEAD') return json({error:'Метод не поддерживается.'},405);
+      if (url.pathname.startsWith('/api/')) {
+        const methods=allowedApiMethods(url.pathname);
+        if(methods&&!methods.includes(request.method))return json({error:'Метод не поддерживается.'},405,{Allow:methods.join(', ')});
+        return await handleApi(request, env);
+      }
+      if (request.method !== 'GET' && request.method !== 'HEAD') return json({error:'Метод не поддерживается.'},405,{Allow:'GET, HEAD'});
       if (url.pathname === '/assets/styles.css') return new Response(STYLES,{headers:responseHeaders('text/css; charset=utf-8')});
       if (url.pathname === '/assets/client.js') return new Response(CLIENT,{headers:responseHeaders('text/javascript; charset=utf-8')});
       if (url.pathname === '/favicon.ico') return new Response(null,{status:204});
