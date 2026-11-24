@@ -1,6 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseBody, validatedInteger } from './security.js';
+import { parseBody, validatedInteger, safeText } from './security.js';
+
+test('текст нормализует Unicode и удаляет управляющие символы без разрыва эмодзи',()=>{
+  assert.equal(safeText('  И\u0306ван\u0000\r\nОтдел\u202E '),'Йван\nОтдел');
+  assert.equal(safeText('а😀б',2),'а😀');
+  assert.equal(safeText({}), '');
+});
 import { NeonAdapter, postgresParameters, postgresRows } from './neon-db.js';
 import { neonConfig } from '@neondatabase/serverless';
 

@@ -10,7 +10,9 @@ export function now() {
 
 export function safeText(value, limit = 2000) {
   if (typeof value !== 'string') return '';
-  return value.trim().slice(0, limit);
+  const normalized=value.normalize('NFC').replace(/\r\n?/g,'\n')
+    .replace(/[\u0000-\u0008\u000B-\u001F\u007F-\u009F\u202A-\u202E\u2066-\u2069]/g,'').trim();
+  return Array.from(normalized).slice(0,Math.max(0,limit)).join('');
 }
 
 export function htmlEscape(value) {
