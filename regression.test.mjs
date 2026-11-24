@@ -49,6 +49,13 @@ async function fixture(t){
   return {env,DB,call,auth};
 }
 
+test('пустое обязательное поле при изменении вакансии отклоняется',async t=>{
+  const {call,DB}=await fixture(t);
+  const response=await call('/api/vacancy/student-manager','POST',{version:1,status:'published',title:'   '},'hr');
+  assert.equal(response.status,400);
+  assert.equal((await DB.prepare('SELECT version FROM vacancies WHERE id=?').bind('student-manager').first()).version,1);
+});
+
 test('ошибочный статус вакансии не превращается в публикацию',async t=>{
   const {call,DB}=await fixture(t);
   const body={title:'Проверка вакансии',department_id:'it',description:'Подробное описание обязанностей сотрудника',requirements:'Конкретные требования к сотруднику',status:'typo'};

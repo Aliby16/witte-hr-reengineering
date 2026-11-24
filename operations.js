@@ -24,9 +24,9 @@ export async function additionalOperations(request, env, user, pathname) {
     must(Number(body.version) === vacancy.version, 'Вакансия уже изменена. Обновите список.', 409);
     const status = safeText(body.status,30);
     must(['draft','published','closed'].includes(status), 'Недопустимый статус вакансии.');
-    const title = safeText(body.title,160) || vacancy.title;
-    const description = safeText(body.description,4000) || vacancy.description;
-    const requirements = safeText(body.requirements,3000) || vacancy.requirements;
+    const title=Object.hasOwn(body,'title')?safeText(body.title,160):vacancy.title;
+    const description=Object.hasOwn(body,'description')?safeText(body.description,4000):vacancy.description;
+    const requirements=Object.hasOwn(body,'requirements')?safeText(body.requirements,3000):vacancy.requirements;
     must(title.length >= 5 && description.length >= 20 && requirements.length >= 10,
       'Проверьте название, обязанности и требования.');
     const changed = await dbRun(env,
