@@ -115,11 +115,16 @@ export function clientBootstrap(safeReturnPath) {
     const {rows}=await api('/api/list/vacancies');
     currentRows=rows;
     root.innerHTML=heading('Вакансии','Подразделения, обязанности, требования и этапы отбора.')+
-      `<div class="filters"><label>Поиск вакансии<input id="vacancy-search" type="search" placeholder="Должность или подразделение"></label></div><div id="vacancy-cards" class="grid two"></div>`;
+      `<div class="filters"><label>Поиск вакансии<input id="vacancy-search" type="search" placeholder="Должность или подразделение"></label><label>Подразделение<select id="vacancy-department"><option value="">Все подразделения</option>${[...new Map(rows.map(v=>[v.department_id,v.department_title])).entries()].map(([id,title])=>`<option value="${esc(id)}">${esc(title)}</option>`).join('')}</select></label></div><div id="vacancy-cards" class="grid two"></div>`;
     drawVacancies(rows);
   }
   function drawVacancies(rows) {
     $('#vacancy-cards').innerHTML=rows.length?rows.map(v=>`<article class="card"><span class="pill">Вакансия</span><h2>${esc(v.title)}</h2><p class="small muted">${esc(v.department_title)}</p><p>${esc(v.description)}</p><h3>Требования</h3><p>${esc(v.requirements)}</p><p class="small">${esc(v.schedule)}</p>${button('Откликнуться','apply',v.id)}</article>`).join(''):empty('По этому запросу вакансий нет.');
+  }
+  function filterPublicVacancies(){
+    const query=($('#vacancy-search')?.value||'').toLocaleLowerCase('ru');
+    const department=$('#vacancy-department')?.value||'';
+    drawVacancies(currentRows.filter(row=>(!department||row.department_id===department)&&`${row.title} ${row.department_title}`.toLocaleLowerCase('ru').includes(query)));
   }
   async function showProfile() {
     const {profile}=await api('/api/profile');
@@ -269,10 +274,10 @@ export function clientBootstrap(safeReturnPath) {
       drawRecords(currentRows.filter(row=>Object.values(row).some(value=>String(value).toLocaleLowerCase('ru').includes(query))));
     }
     if(event.target.id==='vacancy-search') {
-      const query=event.target.value.toLocaleLowerCase('ru');
-      drawVacancies(currentRows.filter(row=>`${row.title} ${row.department_title}`.toLocaleLowerCase('ru').includes(query)));
+      filterPublicVacancies();
     }
   });
+  document.addEventListener('change',event=>{if(event.target.id==='vacancy-department')filterPublicVacancies();});
   document.addEventListener('keydown',event=>{
     if(event.key==='Escape') closeModal();
     if(event.key==='Tab'&&$('.modal')) {
