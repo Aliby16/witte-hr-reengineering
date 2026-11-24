@@ -211,8 +211,8 @@ export function clientBootstrap(safeReturnPath) {
       headers=['Имя','Логин','Роль','Состояние','Действие'];
       cells=rows.map(u=>[esc(u.full_name),esc(u.username),esc(roleNames[u.role_id]),u.active?'Активна':'Заблокирована',u.id===user.id?'Текущая запись':button(u.active?'Заблокировать':'Разблокировать','toggle-user',u.id,true)]);
     } else if(currentPage==='departments') {
-      headers=['Подразделение','Назначение'];
-      cells=rows.map(d=>[esc(d.title),esc(d.description)]);
+      headers=['Подразделение','Назначение','Действия'];
+      cells=rows.map(d=>[esc(d.title),esc(d.description),button('Редактировать','edit-department',d.id,true)]);
     } else if(currentPage==='roles') {
       headers=['Роль','Назначение','Записей'];
       const purpose={admin:'Пользователи, подразделения, роли, журнал и настройки',hr:'Подбор, оценка, встречи, адаптация и отчёты',candidate:'Собственный профиль, отклики, встречи, план и документы'};
@@ -361,6 +361,10 @@ export function clientBootstrap(safeReturnPath) {
         toast(`Опубликовано вакансий: ${result.published}.`);await showList('vacancies');
       }
       else if(action==='new-department') modal('Добавить подразделение',form('department',input('Название','title')+area('Назначение','description'),'Добавить'));
+      else if(action==='edit-department'){
+        const row=currentRows.find(d=>d.id===id);
+        modal('Изменить подразделение',form('edit-department',input('Название','title','text',row.title)+area('Назначение','description',row.description,false),'Сохранить',id));
+      }
       else if(action==='apply') {
         if(!user){location.assign('/login?returnTo='+encodeURIComponent(location.pathname));return;}
         if(user.role_id!=='candidate'){toast('Отклик доступен в роли соискателя.',true);return;}
@@ -418,6 +422,7 @@ export function clientBootstrap(safeReturnPath) {
       else if(action==='feedback'){await api('/api/feedback','POST',data);formElement.reset();}
       else if(action==='settings')await api('/api/admin/settings','POST',data);
       else if(action==='department'){await api('/api/admin/departments','POST',data);closeModal();await showList('departments');}
+      else if(action==='edit-department'){await api('/api/admin/edit-department','POST',{...data,id});closeModal();await showList('departments');}
       else if(action==='toggle-user'){await api('/api/admin/users','POST',{id:data.id,active:data.active==='true'});closeModal();await showList('users');}
       else if(action==='new-user'){await api('/api/admin/create-user','POST',data);closeModal();await showList('users');}
       else if(action==='edit-vacancy'){await api(`/api/vacancy/${encodeURIComponent(id)}`,'POST',data);closeModal();await showList('vacancies');}

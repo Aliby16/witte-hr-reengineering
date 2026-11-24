@@ -49,6 +49,13 @@ async function fixture(t){
   return {env,DB,call,auth};
 }
 
+test('изменение подразделения доступно администратору с сохранением связей',async t=>{
+  const {call,DB}=await fixture(t);const body={id:'it',title:'Департамент ИТ',description:'Поддержка информационных систем'};
+  assert.equal((await call('/api/admin/edit-department','POST',body,'hr')).status,403);
+  assert.equal((await call('/api/admin/edit-department','POST',body,'admin')).status,200);
+  assert.equal((await DB.prepare('SELECT department_id FROM vacancies WHERE id=?').bind('support-specialist').first()).department_id,'it');
+});
+
 test('профиль компетенций изменяется только у черновика без откликов',async t=>{
   const {call,DB}=await fixture(t);
   const body={version:1,items:[{competency_id:'digital',target_level:4}]};

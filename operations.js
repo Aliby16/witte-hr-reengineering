@@ -9,6 +9,18 @@ export async function additionalOperations(request, env, user, pathname) {
   if (request.method !== 'POST') return null;
   const staffRoles = ['admin','hr'];
 
+  if(pathname==='/api/admin/edit-department'){
+    requireRole(user,['admin']);const body=await parseBody(request),id=safeText(body.id,100);
+    const row=await dbOne(env,'SELECT * FROM departments WHERE id=?',[id]);must(row,'Подразделение не найдено.',404);
+    const title=safeText(body.title,160),description=safeText(body.description,1000);
+    must(title.length>=3,'Укажите название подразделения не короче 3 символов.');
+    await env.DB.batch([
+      statement(env,'UPDATE departments SET title=?,description=? WHERE id=?',[title,description,id]),
+      auditStatement(env,user,'Изменение подразделения','department',id,`${row.title} — ${title}`)
+    ]);
+    return json({ok:true});
+  }
+
   if(pathname.startsWith('/api/vacancy-competencies/')){
     requireRole(user,staffRoles);
     const id=pathname.slice('/api/vacancy-competencies/'.length),body=await parseBody(request);
