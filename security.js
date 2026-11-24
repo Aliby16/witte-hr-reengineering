@@ -83,7 +83,7 @@ export async function parseBody(request) {
   must(contentLength <= 65536, 'Запрос слишком большой.', 413);
   must((request.headers.get('content-type') || '').includes('application/json'), 'Ожидается JSON.', 415);
   const text = await request.text();
-  must(text.length <= 65536, 'Запрос слишком большой.', 413);
+  must(enc.encode(text).byteLength <= 65536, 'Запрос слишком большой.', 413);
   try {
     const body = JSON.parse(text);
     must(body && typeof body === 'object' && !Array.isArray(body), 'Неверный формат запроса.');
