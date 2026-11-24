@@ -22,6 +22,15 @@ import { readFileSync } from 'node:fs';
 import { SqliteAdapter } from './local-db.js';
 import { seedDemo, DEMO_PASSWORD } from './seed.js';
 import { safeReturnPath } from './client.js';
+import { exportXlsx, exportDocx } from './documents.js';
+
+test('выгрузка закрепляет заголовки и фильтр Excel, а Word получает читабельные стили',()=>{
+  const xlsx=new TextDecoder().decode(exportXlsx([['Имя','Этап'],['Иван','Новый']]));
+  assert.match(xlsx,/state="frozen"/);assert.match(xlsx,/<autoFilter ref="A1:B2"/);
+  const docx=new TextDecoder().decode(exportDocx('План',['Задание 1','Задание 2']));
+  assert.match(docx,/Times New Roman/);assert.match(docx,/<w:keepNext/);
+  assert.equal((docx.match(/<w:b\/>/g)||[]).length,1);
+});
 
 test('возврат после входа разрешает только внутренние страницы',()=>{
   for(const value of ['https://evil.invalid','//evil.invalid','/\\evil.invalid','/api/logout','/app/../api/me',null])assert.equal(safeReturnPath(value),'/app/dashboard');

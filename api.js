@@ -529,9 +529,10 @@ export async function handleApi(request, env) {
     requireRole(user,['admin','hr','candidate']);
     const plan=await planFor(env,path.slice(17),user);
     const tasks=await dbAll(env,'SELECT * FROM adaptation_tasks WHERE plan_id=? ORDER BY due_date',[plan.id]);
-    const paragraphs=[`Период: ${plan.start_date} — ${plan.end_date}`,`Статус: ${plan.status==='active'?'В работе':'Завершён'}`,
-      ...tasks.map(t=>`${t.title}. Срок: ${t.due_date}. ${t.status==='done'?'Выполнено':'Предстоит выполнить'}. ${t.evidence}`),
-      'Документ сформирован из набора данных.'];
+    const employee=await dbOne(env,'SELECT full_name FROM users WHERE id=?',[plan.employee_id]),mentor=await dbOne(env,'SELECT full_name FROM users WHERE id=?',[plan.mentor_id]);
+    const paragraphs=[`Сотрудник: ${employee.full_name}`,`Наставник: ${mentor.full_name}`,`Период: ${plan.start_date} — ${plan.end_date}`,`Статус: ${plan.status==='active'?'В работе':'Завершён'}`,
+      ...tasks.map((t,index)=>`${index+1}. ${t.title}. Срок: ${t.due_date}. ${t.status==='done'?'Выполнено':'Предстоит выполнить'}. ${t.evidence}`),
+      `Сформировано: ${now().slice(0,10)}. Номер плана: ${plan.id}.`];
     return new Response(exportDocx(plan.title,paragraphs),{headers:{'Content-Type':'application/vnd.openxmlformats-officedocument.wordprocessingml.document','Content-Disposition':'attachment; filename="adaptation-plan.docx"','Cache-Control':'no-store'}});
   }
   if (method === 'GET' && path === '/api/health') return json({ok:true,version:'1.0.0',mode:'educational'});
