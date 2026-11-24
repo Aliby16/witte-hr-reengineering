@@ -80,7 +80,7 @@ test('клиентский JavaScript имеет корректный синта
 test('закрытая страница перенаправляет неавторизованного пользователя',async()=>{
   const response=await call('/app/dashboard');
   assert.equal(response.status,302);
-  assert.equal(response.headers.get('location'),'/login');
+  assert.equal(response.headers.get('location'),'/login?returnTo=%2Fapp%2Fdashboard');
 });
 
 test('неверный пароль не создаёт сессию',async()=>{

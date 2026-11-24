@@ -30,7 +30,7 @@ const worker = {
       let user = null;
       if (env.DB) user = await readSession(request,env);
       if (url.pathname.startsWith('/app/')) {
-        if (!user) return new Response(null,{status:302,headers:{Location:'/login','Cache-Control':'no-store'}});
+        if (!user) return new Response(null,{status:302,headers:{Location:'/login?returnTo='+encodeURIComponent(url.pathname+url.search),'Cache-Control':'no-store'}});
         const page=url.pathname.slice(5);
         if (!PRIVATE_ROUTES[user.role_id]?.includes(page)) {
           return new Response(renderShell(url.pathname,user,'Доступ к разделу ограничен вашей ролью.'),{status:403,headers:responseHeaders('text/html; charset=utf-8')});

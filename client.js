@@ -1,4 +1,13 @@
-export function clientBootstrap() {
+export function safeReturnPath(value){
+  if(typeof value!=='string'||value.length>600||!value.startsWith('/')||value.startsWith('//')||/[\\\u0000-\u001F]/.test(value))return '/app/dashboard';
+  try{
+    const url=new URL(value,'https://local.invalid');
+    if(url.origin!=='https://local.invalid'||!/^\/(app\/[a-z-]+|p\/vacancies)$/.test(url.pathname))return '/app/dashboard';
+    return url.pathname+url.search;
+  }catch{return '/app/dashboard';}
+}
+
+export function clientBootstrap(safeReturnPath) {
   'use strict';
   const $ = selector => document.querySelector(selector);
   const root = $('#page-content');
@@ -43,7 +52,7 @@ export function clientBootstrap() {
       ...(body?{body:body instanceof FormData?body:JSON.stringify(body)}:{})});
     const data=await response.json().catch(()=>({error:'Не удалось прочитать ответ сервера.'}));
     if(!response.ok) {
-      if(response.status===401 && location.pathname.startsWith('/app')) location.assign('/login');
+      if(response.status===401 && location.pathname.startsWith('/app')) location.assign('/login?returnTo='+encodeURIComponent(location.pathname+location.search));
       throw new Error(data.error||'Не удалось выполнить действие.');
     }
     return data;
@@ -225,7 +234,7 @@ export function clientBootstrap() {
     if(path==='/p/vacancies') return showPublicVacancies();
     if(path==='/p/contact') return showContact();
     if(path.startsWith('/app/')) {
-      if(!user) { location.replace('/login'); return; }
+      if(!user) { location.replace('/login?returnTo='+encodeURIComponent(path+location.search)); return; }
       const page=path.split('/')[2]||'dashboard';
       const crumb=$('.breadcrumbs span');
       if(crumb) crumb.textContent=privateLabels[page]||'Кабинет';
@@ -270,7 +279,7 @@ export function clientBootstrap() {
       else if(action==='demo-login') {
         await api('/api/demo/start','POST',{});
         await api('/api/login','POST',{username:id,password:'WitteDemo2026!'});
-        location.assign('/app/dashboard');
+        location.assign(safeReturnPath(new URLSearchParams(location.search).get('returnTo')));
       } else if(action==='logout') {
         await api('/api/logout','POST',{});
         location.assign('/');
@@ -293,7 +302,7 @@ export function clientBootstrap() {
       }
       else if(action==='new-department') modal('Добавить подразделение',form('department',input('Название','title')+area('Назначение','description'),'Добавить'));
       else if(action==='apply') {
-        if(!user){location.assign('/login');return;}
+        if(!user){location.assign('/login?returnTo='+encodeURIComponent(location.pathname));return;}
         if(user.role_id!=='candidate'){toast('Отклик доступен в роли соискателя.',true);return;}
         modal('Отправить отклик',form('apply',area('Сопроводительное сообщение','cover_letter'),'Отправить отклик',id));
       } else if(action==='complete-task') {
@@ -324,7 +333,7 @@ export function clientBootstrap() {
     const action=formElement.dataset.form;
     try {
       if(action==='login') {
-        await api('/api/login','POST',data);location.assign('/app/dashboard');return;
+        await api('/api/login','POST',data);location.assign(safeReturnPath(new URLSearchParams(location.search).get('returnTo')));return;
       }
       if(action==='profile')await api('/api/profile','POST',data);
       else if(action==='revoke-sessions'){await api('/api/sessions/revoke-others','POST',{});await showProfile();}
@@ -369,4 +378,4 @@ export function clientBootstrap() {
   start();
 }
 
-export const CLIENT = `(${clientBootstrap.toString()})();`;
+export const CLIENT = `(${clientBootstrap.toString()})(${safeReturnPath.toString()});`;

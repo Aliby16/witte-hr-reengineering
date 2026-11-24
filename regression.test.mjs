@@ -21,6 +21,13 @@ import worker from './worker.js';
 import { readFileSync } from 'node:fs';
 import { SqliteAdapter } from './local-db.js';
 import { seedDemo, DEMO_PASSWORD } from './seed.js';
+import { safeReturnPath } from './client.js';
+
+test('возврат после входа разрешает только внутренние страницы',()=>{
+  for(const value of ['https://evil.invalid','//evil.invalid','/\\evil.invalid','/api/logout','/app/../api/me',null])assert.equal(safeReturnPath(value),'/app/dashboard');
+  assert.equal(safeReturnPath('/app/plans?status=active'),'/app/plans?status=active');
+  assert.equal(safeReturnPath('/p/vacancies'),'/p/vacancies');
+});
 
 async function fixture(t){
   const DB=new SqliteAdapter();DB.initialize(readFileSync(new URL('./schema.sql',import.meta.url),'utf8'));
