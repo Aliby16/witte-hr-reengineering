@@ -42,6 +42,17 @@ async function fixture(t){
   return {env,DB,call,auth};
 }
 
+test('число одновременно активных сессий ограничено пятью',async t=>{
+  const {call,DB}=await fixture(t);let cookie;
+  for(let i=0;i<7;i++){
+    const response=await call('/api/login','POST',{username:'candidate',password:DEMO_PASSWORD});
+    assert.equal(response.status,200);cookie=response.headers.get('set-cookie').split(';')[0];
+  }
+  assert.equal((await DB.prepare('SELECT COUNT(*) total FROM sessions WHERE user_id=?').bind('candidate').first()).total,5);
+  const response=await worker.fetch(new Request('http://localhost/api/me',{headers:{cookie}}),{DB});
+  assert.equal((await response.json()).user.username,'candidate');
+});
+
 test('вход и текущий пользователь сообщают фактическое окончание сессии',async t=>{
   const {call}=await fixture(t);
   const response=await call('/api/me','GET',undefined,'candidate');

@@ -51,6 +51,9 @@ async function login(request, env) {
     statement(env, 'DELETE FROM sessions WHERE expires_at<?', [now()]),
     statement(env, 'INSERT INTO sessions (token_hash,user_id,csrf_token,expires_at) VALUES (?,?,?,?)',
       [tokenHash, user.id, csrf, expiresAt]),
+    statement(env,`DELETE FROM sessions WHERE user_id=? AND token_hash<>? AND token_hash NOT IN
+      (SELECT token_hash FROM sessions WHERE user_id=? AND token_hash<>? ORDER BY expires_at DESC,token_hash DESC LIMIT 4)`,
+      [user.id,tokenHash,user.id,tokenHash]),
     auditStatement(env, user, 'Вход', 'session', user.id)
   ]);
   const secure = new URL(request.url).protocol === 'https:' ? '; Secure' : '';
