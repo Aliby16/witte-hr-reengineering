@@ -56,6 +56,14 @@ test('массовое прочтение изменяет только собс
   assert.equal((await DB.prepare('SELECT read_at FROM notifications WHERE id=?').bind('notice-other').first()).read_at,null);
 });
 
+test('повторное прочтение сохраняет первую дату и не меняет чужую запись',async t=>{
+  const {call,DB}=await fixture(t);
+  await DB.prepare('INSERT INTO notifications (id,user_id,title,body,read_at,created_at) VALUES (?,?,?,?,?,?)').bind('notice-read','candidate','Заголовок','Сообщение','2020-01-01T00:00:00.000Z','2020-01-01').run();
+  assert.equal((await call('/api/read-notice/notice-read','POST',{},'candidate')).status,200);
+  assert.equal((await call('/api/read-notice/notice-read','POST',{},'candidate2')).status,404);
+  assert.equal((await DB.prepare('SELECT read_at FROM notifications WHERE id=?').bind('notice-read').first()).read_at,'2020-01-01T00:00:00.000Z');
+});
+
 test('просроченные задания в обзоре изолированы по владельцу',async t=>{
   const {call,DB}=await fixture(t);
   await DB.prepare("UPDATE adaptation_tasks SET due_date='2020-01-01',status='todo'").run();

@@ -101,7 +101,7 @@ export async function additionalOperations(request, env, user, pathname) {
     requireRole(user,['admin','hr','candidate']);
     const id=pathname.slice('/api/read-notice/'.length);
     const result=await dbRun(env,
-      'UPDATE notifications SET read_at=? WHERE id=? AND user_id=?',
+      'UPDATE notifications SET read_at=COALESCE(read_at,?) WHERE id=? AND user_id=?',
       [now(),id,user.id]);
     must(result.meta?.changes===1,'Уведомление не найдено.',404);
     return json({ok:true});
