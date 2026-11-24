@@ -170,7 +170,7 @@ export function clientBootstrap(safeReturnPath) {
     root.innerHTML=heading(title)+
       (page==='reports'?'<p class="lead">Реестр сформирован из текущих записей. Выгрузка сохраняет состояние на момент запроса.</p><div class="actions"><a class="button" href="/api/export/applications.xlsx">Скачать реестр XLSX</a></div>':'')+
       (page==='files'?'<p class="lead">Можно загрузить  PDF до 2 МБ. Доступ к файлу проверяется по владельцу записи.</p>'+form('upload','<label>PDF-файл<input type="file" name="file" accept="application/pdf,.pdf" required></label>','Загрузить документ'):'')+
-      toolbar(action,label);
+      (page==='notifications'&&rows.some(n=>!n.read_at)?`<div class="actions">${button('Прочитать все','read-all-notices','',true)}</div>`:'')+toolbar(action,label);
     drawRecords(rows);
   }
   function drawRecords(rows) {
@@ -344,7 +344,10 @@ export function clientBootstrap(safeReturnPath) {
         const vacancy=currentRows.find(v=>v.id===id);
         modal('Редактирование вакансии',form('edit-vacancy',`<input type="hidden" name="version" value="${vacancy.version}">`+input('Должность','title','text',vacancy.title)+area('Обязанности','description',vacancy.description)+area('Требования','requirements',vacancy.requirements)+select('Статус','status',[['draft','Черновик'],['published','Опубликована'],['closed','Закрыта']],vacancy.status),'Сохранить',id));
       } else if(action==='interview-result') modal('Итог собеседования',form('interview-result',select('Статус','status',[['completed','Завершено'],['cancelled','Отменено']])+area('Итог встречи или причина отмены','result'),'Сохранить',id));
-      else if(action==='read-notice') {await api(`/api/read-notice/${encodeURIComponent(id)}`,'POST',{});await showList('notifications');}
+      else if(action==='read-notice'||action==='read-all-notices') {
+        await api(action==='read-notice'?`/api/read-notice/${encodeURIComponent(id)}`:'/api/notices/read-all','POST',{});
+        user=(await api('/api/me')).user;privateNav();await showList('notifications');
+      }
       else if(action==='withdraw') modal('Отзыв отклика',`<p>Отклик будет отозван, запланированные встречи отменены. Повторный отклик на ту же вакансию не создаётся.</p>`+form('withdraw','','Отозвать отклик',id));
       else if(action==='bulk-publish') {
         const ids=[...document.querySelectorAll('[name=bulk-vacancy]:checked')].map(input=>input.value);

@@ -9,6 +9,12 @@ export async function additionalOperations(request, env, user, pathname) {
   if (request.method !== 'POST') return null;
   const staffRoles = ['admin','hr'];
 
+  if(pathname==='/api/notices/read-all'){
+    requireRole(user,['admin','hr','candidate']);
+    const result=await dbRun(env,'UPDATE notifications SET read_at=? WHERE user_id=? AND read_at IS NULL',[now(),user.id]);
+    return json({ok:true,read:result.meta?.changes||0});
+  }
+
   if (pathname.startsWith('/api/vacancy/')) {
     requireRole(user, staffRoles);
     const id = pathname.slice('/api/vacancy/'.length);

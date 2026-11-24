@@ -49,6 +49,13 @@ async function fixture(t){
   return {env,DB,call,auth};
 }
 
+test('массовое прочтение изменяет только собственные непрочитанные уведомления',async t=>{
+  const {call,DB}=await fixture(t);
+  await DB.prepare('INSERT INTO notifications (id,user_id,title,body,created_at) VALUES (?,?,?,?,?)').bind('notice-other','candidate','Заголовок','Сообщение','2026-01-01').run();
+  assert.equal((await call('/api/notices/read-all','POST',{},'candidate3')).status,200);
+  assert.equal((await DB.prepare('SELECT read_at FROM notifications WHERE id=?').bind('notice-other').first()).read_at,null);
+});
+
 test('просроченные задания в обзоре изолированы по владельцу',async t=>{
   const {call,DB}=await fixture(t);
   await DB.prepare("UPDATE adaptation_tasks SET due_date='2020-01-01',status='todo'").run();
