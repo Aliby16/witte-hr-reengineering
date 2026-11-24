@@ -148,7 +148,9 @@ export function clientBootstrap(safeReturnPath) {
   async function showProfile() {
     const {profile}=await api('/api/profile');
     const {rows:sessions}=await api('/api/sessions');
+    const filled=[Boolean(profile.education?.trim()),Boolean(profile.experience?.trim()),Boolean(profile.about?.trim()),profile.consent===1].filter(Boolean).length;
     root.innerHTML=heading('Мой профиль','Укажите образование, профессиональный опыт и сведения о себе.')+
+      `<section class="card"><h2>Заполненность профиля: ${filled*25}%</h2><progress value="${filled}" max="4" aria-label="Заполненность профиля"></progress><p class="small">Для отклика обязательны образование и согласие. Опыт и сведения о себе помогут дополнить профиль.</p></section>`+
       form('profile',area('Образование','education',profile.education||'')+area('Профессиональный опыт','experience',profile.experience||'')+area('О себе','about',profile.about||'',false)+
         `<label class="checkbox-label"><input type="checkbox" name="consent" ${profile.consent?'checked':''}>Подтверждаю использование данных для демонстрации отклика</label>`,'Сохранить профиль')+
       '<h2>Активные сессии</h2>'+table(['Сессия','Действует до'],sessions.map(s=>[s.current_session?'Текущая':'Другой вход',date(s.expires_at)]))+
