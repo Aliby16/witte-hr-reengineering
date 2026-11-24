@@ -223,8 +223,8 @@ export function clientBootstrap(safeReturnPath) {
       headers=['Дата','Пользователь','Действие','Объект','Подробности'];
       cells=rows.map(a=>[date(a.created_at),esc(a.actor_name||'Система'),esc(a.action),esc(a.entity_type),esc(a.details)]);
     } else if(currentPage==='feedback') {
-      headers=['Имя','Контакт','Тема','Сообщение','Дата'];
-      cells=rows.map(f=>[esc(f.name),esc(f.contact),esc(f.topic),esc(f.message),date(f.created_at)]);
+      headers=['Номер','Имя','Контакт','Тема','Сообщение','Дата'];
+      cells=rows.map(f=>[esc(f.id),esc(f.name),esc(f.contact),esc(f.topic),esc(f.message),date(f.created_at)]);
     }
     $('#records').innerHTML=table(headers,cells)+`<nav class="actions" aria-label="Страницы реестра"><span role="status">Записей: ${totalRows}. Страница ${recordPage} из ${totalPages}</span>${recordPage>1?button('Назад','records-prev','',true):''}${recordPage<totalPages?button('Далее','records-next','',true):''}</nav>`+(currentPage==='vacancies'&&user.role_id==='admin'?`<div class="actions">${button('Опубликовать выбранные черновики','bulk-publish','',true)}</div>`:'');
   }
@@ -456,7 +456,11 @@ export function clientBootstrap(safeReturnPath) {
       else if(action==='edit-evidence'){await api(`/api/task-evidence/${encodeURIComponent(id)}`,'POST',data);await planModal(data.plan_id);}
       else if(action==='upload'){await api('/api/files','POST',raw);await showList('files');}
       else if(action==='rename-file'){await api(`/api/file-rename/${encodeURIComponent(id)}`,'POST',data);closeModal();await showList('files');}
-      else if(action==='feedback'){await api('/api/feedback','POST',data);formElement.reset();}
+      else if(action==='feedback'){
+        const result=await api('/api/feedback','POST',data);formElement.reset();
+        let receipt=formElement.querySelector('.feedback-receipt');if(!receipt){receipt=document.createElement('p');receipt.className='feedback-receipt';receipt.setAttribute('role','status');formElement.append(receipt);}
+        receipt.textContent='Обращение зарегистрировано. Номер: '+result.id+'. Сохраните его для уточнения вопроса.';
+      }
       else if(action==='settings')await api('/api/admin/settings','POST',data);
       else if(action==='department'){await api('/api/admin/departments','POST',data);closeModal();await showList('departments');}
       else if(action==='edit-department'){await api('/api/admin/edit-department','POST',{...data,id});closeModal();await showList('departments');}

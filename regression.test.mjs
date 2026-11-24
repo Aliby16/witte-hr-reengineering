@@ -49,6 +49,12 @@ async function fixture(t){
   return {env,DB,call,auth};
 }
 
+test('подтверждение обратной связи содержит номер сохранённой записи',async t=>{
+  const {call,DB}=await fixture(t),response=await call('/api/feedback','POST',{name:'Проверка',contact:'test@example.invalid',topic:'Работа формы',message:'Подробное сообщение для проверки регистрации',consent:true});
+  assert.equal(response.status,201);const {id}=await response.json();assert.match(id,/^feedback_[0-9a-f-]+$/);
+  assert.equal((await DB.prepare('SELECT id FROM feedback WHERE id=?').bind(id).first()).id,id);
+});
+
 test('переименование проверяет владельца и сохраняет ключ содержимого',async t=>{
   const {call,DB}=await fixture(t);const data=new FormData();data.set('file',new File(['%PDF-1.7\n%%EOF'],'original.pdf',{type:'application/pdf'}));
   const {id}=await(await call('/api/files','POST',data,'candidate')).json();const before=await DB.prepare('SELECT object_key FROM file_documents WHERE id=?').bind(id).first();

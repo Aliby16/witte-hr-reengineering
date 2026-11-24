@@ -482,8 +482,9 @@ export async function handleApi(request, env) {
     must(body.consent === true,'Подтвердите использование данных.');
     const duplicate = await dbOne(env,'SELECT id FROM feedback WHERE contact=? AND message=? AND created_at>?',[contact,message,new Date(Date.now()-60000).toISOString()]);
     must(!duplicate,'Сообщение уже отправлено.',409);
-    await dbRun(env,'INSERT INTO feedback (id,name,contact,topic,message,created_at) VALUES (?,?,?,?,?,?)',[uid('feedback'),name,contact,topic,message,now()]);
-    return json({ok:true},201);
+    const id=uid('feedback');
+    await dbRun(env,'INSERT INTO feedback (id,name,contact,topic,message,created_at) VALUES (?,?,?,?,?,?)',[id,name,contact,topic,message,now()]);
+    return json({ok:true,id},201);
   }
   if (method === 'POST' && path.startsWith('/api/admin/')) {
     requireRole(user,['admin']);
