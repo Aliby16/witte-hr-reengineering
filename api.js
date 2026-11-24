@@ -17,7 +17,7 @@ export function allowedApiMethods(path){
   if(path==='/api/profile'||/^\/api\/(applications|plans)\/[^/]+$/.test(path))return ['GET','HEAD','POST'];
   if(/^\/api\/files\/[^/]+$/.test(path))return ['GET','HEAD'];
   if(['/api/demo/start','/api/login','/api/logout','/api/sessions/revoke-others','/api/notices/read-all','/api/applications','/api/vacancies','/api/assessments','/api/interviews','/api/plans','/api/files','/api/requests','/api/feedback'].includes(path)||
-    /^\/api\/(vacancy|vacancy-competencies|clone-vacancy|application-letter|interview|withdraw|read-notice|tasks|task-edit|task-evidence|requests|admin)\//.test(path))return ['POST'];
+    /^\/api\/(vacancy|vacancy-competencies|clone-vacancy|application-letter|interview|withdraw|read-notice|tasks|task-edit|task-evidence|plan-edit|requests|admin)\//.test(path))return ['POST'];
   return null;
 }
 
@@ -263,6 +263,10 @@ async function listRecords(env, user, type) {
   }
   if (type === 'departments') return dbAll(env, 'SELECT * FROM departments ORDER BY title');
   if (type === 'competencies') return dbAll(env, 'SELECT * FROM competencies ORDER BY title');
+  if(type==='mentors'){
+    requireRole(user,STAFF);
+    return dbAll(env,"SELECT id,full_name FROM users WHERE active=1 AND role_id IN ('admin','hr') ORDER BY full_name");
+  }
   requireRole(user, ['admin','hr','candidate']);
   if (type === 'applications') return listApplications(env, user);
   if (type === 'plans') return listPlans(env, user);

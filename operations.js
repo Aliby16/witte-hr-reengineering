@@ -16,6 +16,22 @@ export async function additionalOperations(request, env, user, pathname) {
   if (request.method !== 'POST') return null;
   const staffRoles = ['admin','hr'];
 
+  if(pathname.startsWith('/api/plan-edit/')){
+    requireRole(user,staffRoles);const id=pathname.slice('/api/plan-edit/'.length),body=await parseBody(request);
+    const plan=await dbOne(env,'SELECT * FROM adaptation_plans WHERE id=?',[id]);must(plan,'План не найден.',404);
+    must(plan.status==='active','Завершённый план изменять нельзя.',409);
+    const start=validateDate(body.start_date),end=validateDate(body.end_date),title=safeText(body.title,200),mentor=safeText(body.mentor_id,100);
+    must(end>=start,'Окончание плана не может предшествовать началу.');must(title.length>=5,'Укажите название плана.');
+    must(await dbOne(env,"SELECT id FROM users WHERE id=? AND active=1 AND role_id IN ('admin','hr')",[mentor]),'Наставником назначается активный кадровый специалист.');
+    must(!await dbOne(env,'SELECT id FROM adaptation_tasks WHERE plan_id=? AND (due_date<? OR due_date>?)',[id,start,end]),'Сроки существующих заданий выходят за новый период плана.');
+    await env.DB.batch([
+      statement(env,"UPDATE adaptation_plans SET title=?,start_date=?,end_date=?,mentor_id=? WHERE id=? AND status='active'",[title,start,end,mentor,id]),
+      auditStatement(env,user,'Изменение плана','plan',id,`${start} — ${end}; ${mentor}`),
+      notificationStatement(env,plan.employee_id,'План адаптации уточнён',title)
+    ]);
+    return json({ok:true});
+  }
+
   if(pathname.startsWith('/api/task-evidence/')){
     requireRole(user,staffRoles);const id=pathname.slice('/api/task-evidence/'.length),body=await parseBody(request);
     const task=await dbOne(env,'SELECT * FROM adaptation_tasks WHERE id=?',[id]);must(task,'Задание не найдено.',404);

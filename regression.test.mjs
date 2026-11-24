@@ -49,6 +49,13 @@ async function fixture(t){
   return {env,DB,call,auth};
 }
 
+test('параметры плана сохраняют все задания внутри периода и роль наставника',async t=>{
+  const {call}=await fixture(t);const body={title:'Уточнённый план адаптации',start_date:'2026-11-23',end_date:'2026-12-23',mentor_id:'admin'};
+  assert.equal((await call('/api/plan-edit/plan-1','POST',{...body,end_date:'2026-11-24'},'hr')).status,400);
+  assert.equal((await call('/api/plan-edit/plan-1','POST',{...body,mentor_id:'candidate'},'hr')).status,400);
+  assert.equal((await call('/api/plan-edit/plan-1','POST',body,'hr')).status,200);
+});
+
 test('повторное закрытие плана не создаёт дубликат события',async t=>{
   const {call,DB}=await fixture(t);await DB.prepare("UPDATE adaptation_tasks SET status='done'").run();
   assert.equal((await call('/api/plans/plan-1','POST',{action:'complete'},'hr')).status,200);

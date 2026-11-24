@@ -250,7 +250,7 @@ export function clientBootstrap(safeReturnPath) {
     currentTasks=tasks;currentPlan=plan;
     let body=`<p>${esc(plan.title)}</p><p>${date(plan.start_date)} — ${date(plan.end_date)} · ${pill(plan.status)}</p><div class="actions"><a class="button secondary" href="/api/export/plan/${encodeURIComponent(id)}">Скачать план DOCX</a></div>`+
       table(['Задание','Срок','Статус','Подтверждение','Действия'],tasks.map(t=>[esc(t.title),date(t.due_date),pill(t.status),esc(t.evidence),user.role_id!=='candidate'&&plan.status==='active'?(t.status==='todo'?`<div class="actions">${button('Подтвердить','complete-task',t.id,true)}${button('Изменить','edit-task',t.id,true)}</div>`:button('Уточнить подтверждение','edit-evidence',t.id,true)):'—']));
-    if(user.role_id!=='candidate'&&plan.status==='active') body+=`<h3>Добавить задание</h3>`+form('task',input('Содержание задания','title')+input('Срок','due_date','date'),'Добавить',id)+`<div class="actions">${button('Завершить план','complete-plan',id,true)}</div>`;
+    if(user.role_id!=='candidate'&&plan.status==='active') body+=`<h3>Добавить задание</h3>`+form('task',input('Содержание задания','title')+input('Срок','due_date','date'),'Добавить',id)+`<div class="actions">${button('Изменить план','edit-plan',id,true)}${button('Завершить план','complete-plan',id,true)}</div>`;
     modal('План адаптации',body);
   }
   async function newVacancy() {
@@ -397,6 +397,9 @@ export function clientBootstrap(safeReturnPath) {
         modal('Изменение задания',form('edit-task',`<input type="hidden" name="plan_id" value="${esc(row.plan_id)}">`+input('Задание','title','text',row.title)+input('Срок','due_date','date',row.due_date),'Сохранить',id));
       } else if(action==='complete-task') {
         modal('Подтвердить выполнение',form('complete-task',area('Результат и подтверждение','evidence'),'Подтвердить',id));
+      } else if(action==='edit-plan'){
+        const mentors=(await api('/api/list/mentors')).rows,plan=currentPlan;
+        modal('Изменение плана адаптации',form('edit-plan',input('Название','title','text',plan.title)+input('Начало','start_date','date',plan.start_date)+input('Окончание','end_date','date',plan.end_date)+select('Наставник','mentor_id',mentors.map(m=>[m.id,m.full_name]),plan.mentor_id),'Сохранить',id));
       } else if(action==='complete-plan') {
         await api(`/api/plans/${encodeURIComponent(id)}`,'POST',{action:'complete'});
         toast('План завершён.');await planModal(id);
@@ -443,6 +446,7 @@ export function clientBootstrap(safeReturnPath) {
       else if(action==='application-status'){await api(`/api/applications/${encodeURIComponent(id)}`,'POST',data);await applicationModal(id);}
       else if(action==='interview'){await api('/api/interviews','POST',data);closeModal();await loadPage();}
       else if(action==='plan'){await api('/api/plans','POST',data);closeModal();await showList('plans');}
+      else if(action==='edit-plan'){await api(`/api/plan-edit/${encodeURIComponent(id)}`,'POST',data);await planModal(id);}
       else if(action==='task'){await api(`/api/plans/${encodeURIComponent(id)}`,'POST',data);await planModal(id);}
       else if(action==='complete-task'){await api(`/api/tasks/${encodeURIComponent(id)}`,'POST',data);closeModal();await loadPage();}
       else if(action==='edit-task'){await api(`/api/task-edit/${encodeURIComponent(id)}`,'POST',data);await planModal(data.plan_id);}
