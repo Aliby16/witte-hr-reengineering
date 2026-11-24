@@ -45,15 +45,16 @@ async function login(request, env) {
   const token = `${crypto.randomUUID()}${crypto.randomUUID()}`;
   const csrf = crypto.randomUUID();
   const tokenHash = await digest(token);
+  const expiresAt=new Date(Date.now()+8*3600000).toISOString();
   await env.DB.batch([
     statement(env, 'DELETE FROM login_attempts WHERE attempt_key=?', [key]),
     statement(env, 'DELETE FROM sessions WHERE expires_at<?', [now()]),
     statement(env, 'INSERT INTO sessions (token_hash,user_id,csrf_token,expires_at) VALUES (?,?,?,?)',
-      [tokenHash, user.id, csrf, new Date(Date.now() + 8 * 3600000).toISOString()]),
+      [tokenHash, user.id, csrf, expiresAt]),
     auditStatement(env, user, 'Вход', 'session', user.id)
   ]);
   const secure = new URL(request.url).protocol === 'https:' ? '; Secure' : '';
-  return json({ user: publicUser({ ...user, csrf_token: csrf }) }, 200,
+  return json({ user: publicUser({ ...user, csrf_token: csrf, expires_at:expiresAt }) }, 200,
     { 'Set-Cookie': `witte_session=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=28800${secure}` });
 }
 

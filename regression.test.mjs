@@ -18,6 +18,37 @@ test('текст нормализует Unicode и удаляет управля
 import { NeonAdapter, postgresParameters, postgresRows } from './neon-db.js';
 import { neonConfig } from '@neondatabase/serverless';
 import worker from './worker.js';
+import { readFileSync } from 'node:fs';
+import { SqliteAdapter } from './local-db.js';
+import { seedDemo, DEMO_PASSWORD } from './seed.js';
+
+async function fixture(t){
+  const DB=new SqliteAdapter();DB.initialize(readFileSync(new URL('./schema.sql',import.meta.url),'utf8'));
+  const objects=new Map();
+  const env={DB,BUCKET:{async put(key,value){objects.set(key,value);},async get(key){return objects.has(key)?{body:objects.get(key)}:null;},async delete(key){objects.delete(key);}}};
+  await seedDemo(env);t.after(()=>DB.close());
+  const auth={};
+  const call=async(path,method='GET',body,username)=>{
+    if(username&&!auth[username]){
+      const response=await call('/api/login','POST',{username,password:DEMO_PASSWORD});
+      assert.equal(response.status,200);const data=await response.json();
+      auth[username]={cookie:response.headers.get('set-cookie').split(';')[0],csrf:data.user.csrf_token};
+    }
+    const headers={origin:'http://localhost'};
+    if(username){headers.cookie=auth[username].cookie;headers['x-csrf-token']=auth[username].csrf;}
+    if(body&&!(body instanceof FormData))headers['content-type']='application/json';
+    return worker.fetch(new Request('http://localhost'+path,{method,headers,...(body?{body:body instanceof FormData?body:JSON.stringify(body)}:{})}),env);
+  };
+  return {env,DB,call,auth};
+}
+
+test('вход и текущий пользователь сообщают фактическое окончание сессии',async t=>{
+  const {call}=await fixture(t);
+  const response=await call('/api/me','GET',undefined,'candidate');
+  const {user}=await response.json();
+  assert.ok(Date.parse(user.expires_at)>Date.now()+7*3600000);
+  assert.equal('token_hash'in user,false);
+});
 
 test('ошибка содержит номер запроса, а журнал не раскрывает текст SQL',async()=>{
   const old=console.error,logs=[];console.error=(...args)=>logs.push(args);

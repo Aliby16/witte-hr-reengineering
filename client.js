@@ -352,6 +352,11 @@ export function clientBootstrap() {
       user=data.user;
       if(user){$('#account-label').textContent=user.full_name;$('#account-link').textContent='Личный кабинет';$('#account-link').href='/app/dashboard';privateNav();}
       await loadPage();
+      if(user?.expires_at&&location.pathname.startsWith('/app/'))setTimeout(()=>{
+        const warning=document.createElement('p');warning.className='notice';warning.setAttribute('role','status');
+        warning.textContent='Сессия скоро закончится. Сохраните форму и войдите снова.';
+        root.prepend(warning);
+      },Math.max(0,Date.parse(user.expires_at)-Date.now()-5*60000));
     }catch(error){
       if(location.pathname==='/login'){await showLogin();toast(error.message,true);}
       else if(location.pathname.startsWith('/app')||location.pathname==='/p/vacancies')root.innerHTML=heading('Не удалось загрузить раздел')+`<p>${esc(error.message)}</p><a href="${esc(location.pathname)}">Попробовать снова</a>`;
