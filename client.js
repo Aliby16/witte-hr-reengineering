@@ -89,7 +89,13 @@ export function clientBootstrap(safeReturnPath) {
     return `<div class="table-wrap"><table><thead><tr>${headers.map(h=>`<th scope="col">${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.map(row=>`<tr>${row.map(cell=>`<td>${cell}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
   }
   function toolbar(action='',text='Добавить') {
-    return `<div class="filters"><label>Поиск<input id="search" type="search" placeholder="Название, имя или подразделение"></label>${action?button(text,action):''}</div><div id="records"></div>`;
+    const statuses=['applications','reports'].includes(currentPage)?['new','review','interview','offer','hired','rejected','withdrawn']:[];
+    return `<div class="filters"><label>Поиск<input id="search" type="search" placeholder="Название, имя или подразделение"></label>${statuses.length?`<label>Этап<select id="record-status"><option value="">Все этапы</option>${statuses.map(s=>`<option value="${s}">${statusNames[s]}</option>`).join('')}</select></label>`:''}${action?button(text,action):''}</div><div id="records"></div>`;
+  }
+  function filterRecords(){
+    const query=($('#search')?.value||'').toLocaleLowerCase('ru');
+    const status=$('#record-status')?.value||'';
+    drawRecords(currentRows.filter(row=>(!status||row.status===status)&&Object.values(row).some(value=>String(value??'').toLocaleLowerCase('ru').includes(query))));
   }
   function privateNav() {
     if(!user) return;
@@ -270,14 +276,13 @@ export function clientBootstrap(safeReturnPath) {
   }
   document.addEventListener('input',event=>{
     if(event.target.id==='search') {
-      const query=event.target.value.toLocaleLowerCase('ru');
-      drawRecords(currentRows.filter(row=>Object.values(row).some(value=>String(value).toLocaleLowerCase('ru').includes(query))));
+      filterRecords();
     }
     if(event.target.id==='vacancy-search') {
       filterPublicVacancies();
     }
   });
-  document.addEventListener('change',event=>{if(event.target.id==='vacancy-department')filterPublicVacancies();});
+  document.addEventListener('change',event=>{if(event.target.id==='vacancy-department')filterPublicVacancies();if(event.target.id==='record-status')filterRecords();});
   document.addEventListener('keydown',event=>{
     if(event.key==='Escape') closeModal();
     if(event.key==='Tab'&&$('.modal')) {
