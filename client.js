@@ -82,7 +82,8 @@ export function clientBootstrap(safeReturnPath) {
   }
   function modal(title,body) {
     if(!$('.modal')){
-      modalOpener=document.activeElement;previousOverflow=document.body.style.overflow;
+      if(!modalOpener?.isConnected||modalOpener===document.body)modalOpener=document.activeElement;
+      previousOverflow=document.body.style.overflow;
       document.body.style.overflow='hidden';
     }
     $('#modal-root').innerHTML=`<div class="modal-backdrop"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" tabindex="-1">${button('Закрыть','close','',true)}<h2 id="modal-title">${esc(title)}</h2>${body}</section></div>`;
@@ -334,6 +335,7 @@ export function clientBootstrap(safeReturnPath) {
     const target=event.target.closest('[data-action]');
     if(!target) return;
     const {action,id}=target.dataset;
+    if(action!=='close'&&!$('.modal'))modalOpener=target;
     target.disabled=true;
     try {
       if(action==='close') closeModal();
