@@ -49,6 +49,14 @@ async function fixture(t){
   return {env,DB,call,auth};
 }
 
+test('пересечение встреч специалиста блокируется, граница через час доступна',async t=>{
+  const {call}=await fixture(t);
+  const body={application_id:'app-2',scheduled_at:'2030-01-10T10:00Z',format:'Видеовстреча'};
+  assert.equal((await call('/api/interviews','POST',body,'hr')).status,201);
+  assert.equal((await call('/api/interviews','POST',{...body,scheduled_at:'2030-01-10T10:30Z'},'hr')).status,409);
+  assert.equal((await call('/api/interviews','POST',{...body,scheduled_at:'2030-01-10T11:00Z'},'hr')).status,201);
+});
+
 test('устаревшая оценка не перезаписывает результат другого редактора',async t=>{
   const {call,DB}=await fixture(t);
   const row=await DB.prepare('SELECT created_at FROM assessments WHERE application_id=? AND competency_id=?').bind('app-1','digital').first();

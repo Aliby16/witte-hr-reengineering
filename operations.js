@@ -1,9 +1,16 @@
 import {
-  uid, now, safeText, must, requireRole, json, parseBody, hashPassword, validatedInteger
+  uid, now, safeText, must, requireRole, json, parseBody, hashPassword, validatedInteger, validateDate
 } from './security.js';
 import {
   dbAll, dbOne, dbRun, statement, auditStatement, notificationStatement, applicationFor
 } from './db.js';
+
+export async function assertInterviewSlot(env,interviewer,candidate,scheduled,exclude=''){
+  const rows=await dbAll(env,`SELECT i.id,i.scheduled_at FROM interviews i JOIN applications a ON a.id=i.application_id
+    WHERE i.status='planned' AND (i.interviewer_id=? OR a.candidate_id=?)`,[interviewer,candidate]);
+  must(!rows.some(row=>row.id!==exclude&&Math.abs(Date.parse(row.scheduled_at)-Date.parse(scheduled))<3600000),
+    'В выбранный час у специалиста или соискателя уже запланировано собеседование.',409);
+}
 
 export async function additionalOperations(request, env, user, pathname) {
   if (request.method !== 'POST') return null;

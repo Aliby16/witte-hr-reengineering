@@ -8,7 +8,7 @@ import {
 } from './db.js';
 import { seedDemo } from './seed.js';
 import { exportXlsx, exportDocx } from './documents.js';
-import { additionalOperations } from './operations.js';
+import { additionalOperations, assertInterviewSlot } from './operations.js';
 
 const STAFF = ['admin', 'hr'];
 
@@ -195,6 +195,7 @@ async function createInterview(request, env, user) {
   must(Date.parse(scheduled) > Date.now(), 'Выберите будущую дату собеседования.');
   const format = safeText(body.format, 250);
   must(format.length >= 3, 'Укажите формат и место встречи.');
+  await assertInterviewSlot(env,user.id,app.candidate_id,scheduled);
   const id = uid('interview');
   await env.DB.batch([
     statement(env, 'INSERT INTO interviews (id,application_id,interviewer_id,scheduled_at,format,created_at) VALUES (?,?,?,?,?,?)',
