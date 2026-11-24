@@ -49,6 +49,13 @@ async function fixture(t){
   return {env,DB,call,auth};
 }
 
+test('повторное закрытие плана не создаёт дубликат события',async t=>{
+  const {call,DB}=await fixture(t);await DB.prepare("UPDATE adaptation_tasks SET status='done'").run();
+  assert.equal((await call('/api/plans/plan-1','POST',{action:'complete'},'hr')).status,200);
+  assert.equal((await call('/api/plans/plan-1','POST',{action:'complete'},'hr')).status,409);
+  assert.equal((await DB.prepare('SELECT COUNT(*) total FROM audit_events WHERE action=?').bind('Завершение адаптации').first()).total,1);
+});
+
 test('исправление подтверждения не меняет дату выполнения и фиксируется в журнале',async t=>{
   const {call,DB}=await fixture(t),before=await DB.prepare('SELECT * FROM adaptation_tasks WHERE id=?').bind('task-1').first();
   const response=await call('/api/task-evidence/task-1','POST',{expected_evidence:before.evidence,evidence:'Уточнённое подтверждение выполнения задания'},'hr');

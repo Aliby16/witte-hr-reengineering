@@ -388,12 +388,12 @@ export async function handleApi(request, env) {
       requireRole(user, STAFF);
       const body = await parseBody(request);
       if (body.action === 'complete') {
+        must(plan.status==='active','План уже завершён.',409);
         const count = await dbOne(env, "SELECT COUNT(*) total,SUM(CASE WHEN status='todo' THEN 1 ELSE 0 END) pending FROM adaptation_tasks WHERE plan_id=?", [id]);
         must(Number(count.total) > 0 && Number(count.pending) === 0, 'Для завершения плана необходимо выполнить все задания.');
-        await env.DB.batch([
-          statement(env, "UPDATE adaptation_plans SET status='completed' WHERE id=?", [id]),
-          auditStatement(env, user, 'Завершение адаптации', 'plan', id)
-        ]);
+        const changed=await dbRun(env,"UPDATE adaptation_plans SET status='completed' WHERE id=? AND status='active'",[id]);
+        must(changed.meta?.changes===1,'План уже завершён.',409);
+        await auditStatement(env,user,'Завершение адаптации','plan',id).run();
       } else {
         must(plan.status === 'active', 'План завершён.');
         const title = safeText(body.title, 250);
