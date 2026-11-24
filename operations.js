@@ -147,6 +147,20 @@ export async function additionalOperations(request, env, user, pathname) {
     must(row.status==='planned','Собеседование уже завершено или отменено.',409);
     const app=await applicationFor(env,row.application_id,user);
     const body=await parseBody(request);
+    if(body.action==='reschedule'){
+      must(['review','interview'].includes(app.status),'Отклик уже перешёл к итоговому решению.',409);
+      const scheduled=validateDate(body.scheduled_at,true),format=safeText(body.format,250);
+      must(Date.parse(scheduled)>Date.now(),'Выберите будущую дату собеседования.');
+      must(format.length>=3,'Укажите формат и место встречи.');
+      await assertInterviewSlot(env,row.interviewer_id,app.candidate_id,scheduled,id);
+      const changed=await dbRun(env,"UPDATE interviews SET scheduled_at=?,format=? WHERE id=? AND status='planned' AND scheduled_at=?",[scheduled,format,id,row.scheduled_at]);
+      must(changed.meta?.changes===1,'Встреча уже изменена. Обновите список.',409);
+      await env.DB.batch([
+        auditStatement(env,user,'Перенос собеседования','interview',id,`${row.scheduled_at} — ${scheduled}`),
+        notificationStatement(env,app.candidate_id,'Собеседование перенесено',`${scheduled}. ${format}`)
+      ]);
+      return json({ok:true});
+    }
     must(['completed','cancelled'].includes(body.status),'Недопустимый статус встречи.');
     const result=safeText(body.result,2500);
     must(result.length >= 10,'Укажите итог встречи или причину отмены.');

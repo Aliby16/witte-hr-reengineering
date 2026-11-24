@@ -198,7 +198,7 @@ export function clientBootstrap(safeReturnPath) {
       cells=rows.map(p=>[esc(p.title),esc(p.employee_name),`${date(p.start_date)} — ${date(p.end_date)}`,`${p.done_count} из ${p.task_count}`,button('Открыть','plan',p.id,true)]);
     } else if(currentPage==='interviews') {
       headers=['Соискатель','Вакансия','Дата и время','Формат','Статус','Действия'];
-      cells=rows.map(i=>[esc(i.candidate_name),esc(i.vacancy_title),date(i.scheduled_at),esc(i.format),pill(i.status),isStaff&&i.status==='planned'?button('Зафиксировать итог','interview-result',i.id,true):esc(i.result||'—')]);
+      cells=rows.map(i=>[esc(i.candidate_name),esc(i.vacancy_title),date(i.scheduled_at),esc(i.format),pill(i.status),isStaff&&i.status==='planned'?`<div class="actions">${button('Зафиксировать итог','interview-result',i.id,true)}${button('Перенести','reschedule-interview',i.id,true)}</div>`:esc(i.result||'—')]);
     } else if(currentPage==='competencies') {
       headers=['Компетенция','Наблюдаемый результат','Вес'];
       cells=rows.map(c=>[esc(c.title),esc(c.description),esc(c.weight)]);
@@ -364,6 +364,10 @@ export function clientBootstrap(safeReturnPath) {
         const vacancy=currentRows.find(v=>v.id===id);
         modal('Редактирование вакансии',form('edit-vacancy',`<input type="hidden" name="version" value="${vacancy.version}">`+input('Должность','title','text',vacancy.title)+area('Обязанности','description',vacancy.description)+area('Требования','requirements',vacancy.requirements)+select('Статус','status',[['draft','Черновик'],['published','Опубликована'],['closed','Закрыта']],vacancy.status),'Сохранить',id));
       } else if(action==='interview-result') modal('Итог собеседования',form('interview-result',select('Статус','status',[['completed','Завершено'],['cancelled','Отменено']])+area('Итог встречи или причина отмены','result'),'Сохранить',id));
+      else if(action==='reschedule-interview'){
+        const row=currentRows.find(i=>i.id===id);
+        modal('Перенос собеседования',form('reschedule-interview',input('Дата и время UTC','scheduled_at','datetime-local',new Date(row.scheduled_at).toISOString().slice(0,16))+input('Формат и место','format','text',row.format),'Перенести встречу',id));
+      }
       else if(action==='read-notice'||action==='read-all-notices') {
         await api(action==='read-notice'?`/api/read-notice/${encodeURIComponent(id)}`:'/api/notices/read-all','POST',{});
         user=(await api('/api/me')).user;privateNav();await showList('notifications');
@@ -443,6 +447,7 @@ export function clientBootstrap(safeReturnPath) {
       else if(action==='user-department'){await api('/api/admin/user-department','POST',{...data,id});closeModal();await showList('users');}
       else if(action==='edit-vacancy'){await api(`/api/vacancy/${encodeURIComponent(id)}`,'POST',data);closeModal();await showList('vacancies');}
       else if(action==='interview-result'){await api(`/api/interview/${encodeURIComponent(id)}`,'POST',data);closeModal();await showList('interviews');}
+      else if(action==='reschedule-interview'){await api(`/api/interview/${encodeURIComponent(id)}`,'POST',{...data,action:'reschedule'});closeModal();await showList('interviews');}
       else if(action==='withdraw'){await api(`/api/withdraw/${encodeURIComponent(id)}`,'POST',{});closeModal();await showList('applications');}
       toast(action==='feedback'?'Сообщение сохранено в проекте.':'Изменения сохранены.');
     }catch(error){

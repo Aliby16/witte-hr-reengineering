@@ -49,6 +49,13 @@ async function fixture(t){
   return {env,DB,call,auth};
 }
 
+test('перенос встречи сохраняет идентификатор и уведомляет соискателя',async t=>{
+  const {call,DB}=await fixture(t);
+  assert.equal((await call('/api/interview/interview-1','POST',{action:'reschedule',scheduled_at:'2030-01-11T12:00Z',format:'Видеовстреча'},'hr')).status,200);
+  assert.equal((await DB.prepare('SELECT scheduled_at FROM interviews WHERE id=?').bind('interview-1').first()).scheduled_at,'2030-01-11T12:00:00.000Z');
+  assert.ok((await DB.prepare('SELECT COUNT(*) total FROM notifications WHERE user_id=?').bind('candidate').first()).total>1);
+});
+
 test('пересечение встреч специалиста блокируется, граница через час доступна',async t=>{
   const {call}=await fixture(t);
   const body={application_id:'app-2',scheduled_at:'2030-01-10T10:00Z',format:'Видеовстреча'};
