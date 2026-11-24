@@ -231,6 +231,7 @@ export function clientBootstrap(safeReturnPath) {
     const transitions={new:['review','rejected'],review:['interview','rejected'],interview:['offer','rejected'],offer:['hired','rejected']};
     let body=`<p><strong>${esc(a.candidate_name)}</strong><br>${esc(a.vacancy_title)}</p><p>${pill(a.status)}</p><p>${esc(a.cover_letter)}</p>`;
     if(a.decision_note) body+=`<p><strong>Обоснование решения:</strong> ${esc(a.decision_note)}</p>`;
+    if(user.role_id==='candidate'&&a.status==='new')body+='<h3>Изменить сопроводительное сообщение</h3>'+form('application-letter',`<input type="hidden" name="version" value="${a.version}">`+area('Сопроводительное сообщение','cover_letter',a.cover_letter),'Сохранить сообщение',id);
     if(user.role_id==='candidate'&&['new','review','interview','offer'].includes(a.status))body+=`<div class="actions">${button('Отозвать отклик','withdraw',a.id,true)}</div>`;
     if(user.role_id!=='candidate') {
       body+=`<h3>Оценка компетенций</h3>`+table(['Компетенция','Оценка','Основание'],assessments.map(s=>[esc(s.title),s.score??'Не заполнена',esc(s.evidence||'')]))+
@@ -411,6 +412,7 @@ export function clientBootstrap(safeReturnPath) {
       if(action==='profile')await api('/api/profile','POST',data);
       else if(action==='revoke-sessions'){await api('/api/sessions/revoke-others','POST',{});await showProfile();}
       else if(action==='apply'){await api('/api/applications','POST',{...data,vacancy_id:id});closeModal();}
+      else if(action==='application-letter'){await api(`/api/application-letter/${encodeURIComponent(id)}`,'POST',data);await applicationModal(id);}
       else if(action==='vacancy'){await api('/api/vacancies','POST',data);closeModal();await showList('vacancies');}
       else if(action==='vacancy-profile'){
         const items=Object.entries(data).filter(([key,value])=>key.startsWith('level_')&&Number(value)>0).map(([key,value])=>({competency_id:key.slice(6),target_level:Number(value)}));

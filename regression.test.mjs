@@ -49,6 +49,14 @@ async function fixture(t){
   return {env,DB,call,auth};
 }
 
+test('автор изменяет сообщение только нового отклика и с актуальной версией',async t=>{
+  const {call}=await fixture(t);const body={version:1,cover_letter:'Уточнённое сопроводительное сообщение'};
+  assert.equal((await call('/api/application-letter/app-4','POST',body,'candidate')).status,403);
+  assert.equal((await call('/api/application-letter/app-4','POST',body,'candidate4')).status,200);
+  assert.equal((await call('/api/application-letter/app-4','POST',body,'candidate4')).status,409);
+  assert.equal((await call('/api/application-letter/app-6','POST',body,'candidate4')).status,409);
+});
+
 test('назначение подразделения проверяет роль и существование справочника',async t=>{
   const {call,DB}=await fixture(t);
   assert.equal((await call('/api/admin/user-department','POST',{id:'candidate-3',department_id:'it'},'hr')).status,403);

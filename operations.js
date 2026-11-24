@@ -9,6 +9,17 @@ export async function additionalOperations(request, env, user, pathname) {
   if (request.method !== 'POST') return null;
   const staffRoles = ['admin','hr'];
 
+  if(pathname.startsWith('/api/application-letter/')){
+    requireRole(user,['candidate']);const id=pathname.slice('/api/application-letter/'.length),body=await parseBody(request);
+    const app=await applicationFor(env,id,user);must(app.status==='new','Сообщение изменяется до начала рассмотрения.',409);
+    const letter=safeText(body.cover_letter,2000);must(letter.length>=10,'Сообщение должно содержать не менее 10 символов.');
+    const version=validatedInteger(body.version,1,2147483647,'Версия');
+    const changed=await dbRun(env,"UPDATE applications SET cover_letter=?,version=version+1,updated_at=? WHERE id=? AND version=? AND status='new'",[letter,now(),id,version]);
+    must(changed.meta?.changes===1,'Отклик уже изменён. Обновите карточку.',409);
+    await auditStatement(env,user,'Изменение сопроводительного сообщения','application',id).run();
+    return json({ok:true,version:version+1});
+  }
+
   if(pathname==='/api/admin/user-department'){
     requireRole(user,['admin']);const body=await parseBody(request),id=safeText(body.id,100);
     const target=await dbOne(env,'SELECT id FROM users WHERE id=?',[id]);must(target,'Пользователь не найден.',404);
