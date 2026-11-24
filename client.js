@@ -39,7 +39,7 @@ export function clientBootstrap(safeReturnPath) {
   const area = (label,name,value='',required=true) => `<label>${label}<textarea name="${name}" ${required?'required':''} ${limits(name)}>${esc(value)}</textarea>${help(name)}</label>`;
   const select = (label,name,options,value='') => `<label>${label}<select name="${name}" required>${options.map(([id,text])=>`<option value="${esc(id)}" ${id===value?'selected':''}>${esc(text)}</option>`).join('')}</select></label>`;
   const heading = (title, description='') => `<h1>${esc(title)}</h1>${description?`<p class="lead">${esc(description)}</p>`:''}`;
-  const form = (action,body,submit='Сохранить',id='') => `<form class="form" data-form="${action}" data-id="${esc(id)}">${body}<div class="actions"><button type="submit">${submit}</button></div></form>`;
+  const form = (action,body,submit='Сохранить',id='') => `<form class="form" data-form="${action}" data-id="${esc(id)}">${body}<p class="form-error" role="alert" tabindex="-1" hidden></p><div class="actions"><button type="submit">${submit}</button></div></form>`;
   const empty = message => `<div class="empty">${esc(message)}</div>`;
   function toast(message,error=false) {
     const element=document.createElement('div');
@@ -345,6 +345,8 @@ export function clientBootstrap(safeReturnPath) {
     event.preventDefault();
     if(formElement.dataset.pending==='true')return;
     formElement.dataset.pending='true';formElement.setAttribute('aria-busy','true');
+    const inlineError=formElement.querySelector('.form-error');
+    inlineError.hidden=true;inlineError.textContent='';
     const submit=formElement.querySelector('button[type=submit]');
     submit.disabled=true;
     const raw=new FormData(formElement);
@@ -377,7 +379,10 @@ export function clientBootstrap(safeReturnPath) {
       else if(action==='interview-result'){await api(`/api/interview/${encodeURIComponent(id)}`,'POST',data);closeModal();await showList('interviews');}
       else if(action==='withdraw'){await api(`/api/withdraw/${encodeURIComponent(id)}`,'POST',{});closeModal();await showList('applications');}
       toast(action==='feedback'?'Сообщение сохранено в проекте.':'Изменения сохранены.');
-    }catch(error){toast(error.message,true);}
+    }catch(error){
+      if(formElement.isConnected){inlineError.hidden=false;inlineError.textContent=error.message;inlineError.focus();}
+      else toast(error.message,true);
+    }
     finally{delete formElement.dataset.pending;formElement.removeAttribute('aria-busy');if(submit.isConnected)submit.disabled=false;}
   });
   async function start() {
