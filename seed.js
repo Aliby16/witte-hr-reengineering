@@ -7,8 +7,6 @@ export async function seedDemo(env) {
   const present = await dbOne(env, 'SELECT value FROM settings WHERE key=?', ['demo_initialized']);
   if (present) return false;
   const date = now();
-  const salt = crypto.randomUUID();
-  const passwordHash = await hashPassword(DEMO_PASSWORD, salt);
   const operations = [];
   const put = (sql, args) => operations.push(statement(env, sql, args));
   put('INSERT INTO settings (key,value) VALUES (?,?)', ['demo_initialized', date]);
@@ -31,6 +29,8 @@ export async function seedDemo(env) {
     ['candidate-4','candidate4','Иван Морозов','candidate',null]
   ];
   for (const [id, username, fullName, role, department] of people) {
+    const salt=crypto.randomUUID();
+    const passwordHash=await hashPassword(DEMO_PASSWORD,salt);
     put('INSERT INTO users (id,username,full_name,password_hash,salt,role_id,department_id,active,created_at) VALUES (?,?,?,?,?,?,?,?,?)',
       [id, username, fullName, passwordHash, salt, role, department, 1, date]);
     if (role === 'candidate') {

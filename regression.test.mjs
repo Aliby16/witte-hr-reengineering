@@ -58,6 +58,12 @@ async function fixture(t){
   return {env,DB,call,auth};
 }
 
+test('начальные пользователи имеют индивидуальные соли и разные хеши',async t=>{
+  const {DB}=await fixture(t);const {results:rows}=await DB.prepare('SELECT salt,password_hash FROM users').all();
+  assert.equal(new Set(rows.map(row=>row.salt)).size,6);
+  assert.equal(new Set(rows.map(row=>row.password_hash)).size,6);
+});
+
 test('подтверждение обратной связи содержит номер сохранённой записи',async t=>{
   const {call,DB}=await fixture(t),response=await call('/api/feedback','POST',{name:'Проверка',contact:'test@example.invalid',topic:'Работа формы',message:'Подробное сообщение для проверки регистрации',consent:true});
   assert.equal(response.status,201);const {id}=await response.json();assert.match(id,/^feedback_[0-9a-f-]+$/);

@@ -535,6 +535,6 @@ export async function handleApi(request, env) {
       `Сформировано: ${now().slice(0,10)}. Номер плана: ${plan.id}.`];
     return new Response(exportDocx(plan.title,paragraphs),{headers:{'Content-Type':'application/vnd.openxmlformats-officedocument.wordprocessingml.document','Content-Disposition':'attachment; filename="adaptation-plan.docx"','Cache-Control':'no-store'}});
   }
-  if (method === 'GET' && path === '/api/health') return json({ok:true,version:'1.0.0',mode:'educational'});
+  if (method === 'GET' && path === '/api/health') return json({ok:true,version:'1.0.0',mode:'personnel'});
   throw new AppError(404,'Запрошенный ресурс не найден.');
 }
