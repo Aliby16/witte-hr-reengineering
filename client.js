@@ -51,9 +51,17 @@ export function clientBootstrap(safeReturnPath) {
     const headers={};
     if(body && !(body instanceof FormData)) headers['Content-Type']='application/json';
     if(user?.csrf_token) headers['X-CSRF-Token']=user.csrf_token;
-    const response=await fetch(path,{method,credentials:'same-origin',headers,
-      ...(body?{body:body instanceof FormData?body:JSON.stringify(body)}:{})});
-    const data=await response.json().catch(()=>({error:'Не удалось прочитать ответ сервера.'}));
+    const controller=new AbortController();
+    const timer=setTimeout(()=>controller.abort(),20000);
+    let response,data;
+    try{
+      response=await fetch(path,{method,credentials:'same-origin',headers,signal:controller.signal,
+        ...(body?{body:body instanceof FormData?body:JSON.stringify(body)}:{})});
+      data=await response.json().catch(()=>({error:'Не удалось прочитать ответ сервера.'}));
+    }catch(error){
+      if(error.name==='AbortError')throw new Error('Ответ сервера не получен за 20 секунд. Обновите данные перед повторной отправкой.');
+      throw new Error('Нет связи с сервером. Проверьте соединение и обновите данные перед повторной отправкой.');
+    }finally{clearTimeout(timer);}
     if(!response.ok) {
       if(response.status===401 && location.pathname.startsWith('/app')) location.assign('/login?returnTo='+encodeURIComponent(location.pathname+location.search));
       throw new Error(data.error||'Не удалось выполнить действие.');
@@ -327,6 +335,8 @@ export function clientBootstrap(safeReturnPath) {
     const formElement=event.target.closest('form[data-form]');
     if(!formElement)return;
     event.preventDefault();
+    if(formElement.dataset.pending==='true')return;
+    formElement.dataset.pending='true';formElement.setAttribute('aria-busy','true');
     const submit=formElement.querySelector('button[type=submit]');
     submit.disabled=true;
     const raw=new FormData(formElement);
@@ -360,7 +370,7 @@ export function clientBootstrap(safeReturnPath) {
       else if(action==='withdraw'){await api(`/api/withdraw/${encodeURIComponent(id)}`,'POST',{});closeModal();await showList('applications');}
       toast(action==='feedback'?'Сообщение сохранено в проекте.':'Изменения сохранены.');
     }catch(error){toast(error.message,true);}
-    finally{if(submit.isConnected)submit.disabled=false;}
+    finally{delete formElement.dataset.pending;formElement.removeAttribute('aria-busy');if(submit.isConnected)submit.disabled=false;}
   });
   async function start() {
     try {
