@@ -104,6 +104,8 @@ export function validateDate(value, withTime = false) {
 
 export function validatedInteger(value, min, max, label) {
   must(value !== '' && value !== null && value !== undefined, `Заполните поле «${label}».`);
+  must(typeof value === 'number' || (typeof value === 'string' && /^-?\d+$/.test(value.trim())),
+    `${label}: введите целое число.`);
   const parsed = Number(value);
   must(Number.isInteger(parsed) && parsed >= min && parsed <= max, `${label}: допустимо целое число от ${min} до ${max}.`);
   return parsed;
