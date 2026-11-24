@@ -15,6 +15,7 @@ export function clientBootstrap(safeReturnPath) {
   let currentRows = [];
   let currentPage = '';
   let assessmentRevisions=[];
+  let currentTasks=[],currentPlan=null;
   let recordPage=1,currentView=[];
   const pageSize=20;
   let modalOpener=null,previousOverflow='';
@@ -246,8 +247,9 @@ export function clientBootstrap(safeReturnPath) {
   }
   async function planModal(id) {
     const {plan,tasks}=await api(`/api/plans/${encodeURIComponent(id)}`);
+    currentTasks=tasks;currentPlan=plan;
     let body=`<p>${esc(plan.title)}</p><p>${date(plan.start_date)} — ${date(plan.end_date)} · ${pill(plan.status)}</p><div class="actions"><a class="button secondary" href="/api/export/plan/${encodeURIComponent(id)}">Скачать план DOCX</a></div>`+
-      table(['Задание','Срок','Статус','Подтверждение','Действия'],tasks.map(t=>[esc(t.title),date(t.due_date),pill(t.status),esc(t.evidence),user.role_id!=='candidate'&&t.status==='todo'&&plan.status==='active'?button('Подтвердить','complete-task',t.id,true):'—']));
+      table(['Задание','Срок','Статус','Подтверждение','Действия'],tasks.map(t=>[esc(t.title),date(t.due_date),pill(t.status),esc(t.evidence),user.role_id!=='candidate'&&t.status==='todo'&&plan.status==='active'?`<div class="actions">${button('Подтвердить','complete-task',t.id,true)}${button('Изменить','edit-task',t.id,true)}</div>`:'—']));
     if(user.role_id!=='candidate'&&plan.status==='active') body+=`<h3>Добавить задание</h3>`+form('task',input('Содержание задания','title')+input('Срок','due_date','date'),'Добавить',id)+`<div class="actions">${button('Завершить план','complete-plan',id,true)}</div>`;
     modal('План адаптации',body);
   }
@@ -387,6 +389,9 @@ export function clientBootstrap(safeReturnPath) {
         if(!user){location.assign('/login?returnTo='+encodeURIComponent(location.pathname));return;}
         if(user.role_id!=='candidate'){toast('Отклик доступен в роли соискателя.',true);return;}
         modal('Отправить отклик',form('apply',area('Сопроводительное сообщение','cover_letter'),'Отправить отклик',id));
+      } else if(action==='edit-task'){
+        const row=currentTasks.find(t=>t.id===id);
+        modal('Изменение задания',form('edit-task',`<input type="hidden" name="plan_id" value="${esc(row.plan_id)}">`+input('Задание','title','text',row.title)+input('Срок','due_date','date',row.due_date),'Сохранить',id));
       } else if(action==='complete-task') {
         modal('Подтвердить выполнение',form('complete-task',area('Результат и подтверждение','evidence'),'Подтвердить',id));
       } else if(action==='complete-plan') {
@@ -437,6 +442,7 @@ export function clientBootstrap(safeReturnPath) {
       else if(action==='plan'){await api('/api/plans','POST',data);closeModal();await showList('plans');}
       else if(action==='task'){await api(`/api/plans/${encodeURIComponent(id)}`,'POST',data);await planModal(id);}
       else if(action==='complete-task'){await api(`/api/tasks/${encodeURIComponent(id)}`,'POST',data);closeModal();await loadPage();}
+      else if(action==='edit-task'){await api(`/api/task-edit/${encodeURIComponent(id)}`,'POST',data);await planModal(data.plan_id);}
       else if(action==='upload'){await api('/api/files','POST',raw);await showList('files');}
       else if(action==='feedback'){await api('/api/feedback','POST',data);formElement.reset();}
       else if(action==='settings')await api('/api/admin/settings','POST',data);

@@ -16,6 +16,20 @@ export async function additionalOperations(request, env, user, pathname) {
   if (request.method !== 'POST') return null;
   const staffRoles = ['admin','hr'];
 
+  if(pathname.startsWith('/api/task-edit/')){
+    requireRole(user,staffRoles);const id=pathname.slice('/api/task-edit/'.length),body=await parseBody(request);
+    const task=await dbOne(env,'SELECT * FROM adaptation_tasks WHERE id=?',[id]);must(task,'Задание не найдено.',404);
+    const plan=await dbOne(env,'SELECT * FROM adaptation_plans WHERE id=?',[task.plan_id]);
+    must(task.status==='todo'&&plan.status==='active','Изменяется только невыполненное задание активного плана.',409);
+    const title=safeText(body.title,250),due=validateDate(body.due_date);
+    must(title.length>=5,'Укажите содержание задания не короче 5 символов.');
+    must(due>=plan.start_date&&due<=plan.end_date,'Срок задания должен входить в период плана.');
+    const changed=await dbRun(env,"UPDATE adaptation_tasks SET title=?,due_date=? WHERE id=? AND status='todo'",[title,due,id]);
+    must(changed.meta?.changes===1,'Задание уже изменено.',409);
+    await auditStatement(env,user,'Изменение задания','task',id,`${task.title} — ${title}; ${due}`).run();
+    return json({ok:true});
+  }
+
   if(pathname.startsWith('/api/application-letter/')){
     requireRole(user,['candidate']);const id=pathname.slice('/api/application-letter/'.length),body=await parseBody(request);
     const app=await applicationFor(env,id,user);must(app.status==='new','Сообщение изменяется до начала рассмотрения.',409);

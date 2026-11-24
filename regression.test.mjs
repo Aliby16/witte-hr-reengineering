@@ -49,6 +49,13 @@ async function fixture(t){
   return {env,DB,call,auth};
 }
 
+test('изменение задания контролирует состояние и границы плана',async t=>{
+  const {call}=await fixture(t);const body={title:'Уточнённое содержание задания',due_date:'2026-12-01'};
+  assert.equal((await call('/api/task-edit/task-1','POST',body,'hr')).status,409);
+  assert.equal((await call('/api/task-edit/task-2','POST',{...body,due_date:'2027-01-01'},'hr')).status,400);
+  assert.equal((await call('/api/task-edit/task-2','POST',body,'hr')).status,200);
+});
+
 test('повторное выполнение не перезаписывает подтверждение задания',async t=>{
   const {call,DB}=await fixture(t);const before=await DB.prepare('SELECT evidence FROM adaptation_tasks WHERE id=?').bind('task-1').first();
   assert.equal((await call('/api/tasks/task-1','POST',{evidence:'Новое подтверждение без отдельного исправления'},'hr')).status,409);

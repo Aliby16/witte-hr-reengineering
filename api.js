@@ -17,7 +17,7 @@ export function allowedApiMethods(path){
   if(path==='/api/profile'||/^\/api\/(applications|plans)\/[^/]+$/.test(path))return ['GET','HEAD','POST'];
   if(/^\/api\/files\/[^/]+$/.test(path))return ['GET','HEAD'];
   if(['/api/demo/start','/api/login','/api/logout','/api/sessions/revoke-others','/api/notices/read-all','/api/applications','/api/vacancies','/api/assessments','/api/interviews','/api/plans','/api/files','/api/requests','/api/feedback'].includes(path)||
-    /^\/api\/(vacancy|vacancy-competencies|clone-vacancy|application-letter|interview|withdraw|read-notice|tasks|requests|admin)\//.test(path))return ['POST'];
+    /^\/api\/(vacancy|vacancy-competencies|clone-vacancy|application-letter|interview|withdraw|read-notice|tasks|task-edit|requests|admin)\//.test(path))return ['POST'];
   return null;
 }
 
