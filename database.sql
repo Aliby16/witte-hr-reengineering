@@ -200,6 +200,24 @@ CREATE INDEX notifications_user_idx ON notifications(user_id,read_at);
 
 CREATE INDEX sessions_expiry_idx ON sessions(expires_at);
 
+CREATE INDEX IF NOT EXISTS idx_fk_users_department_id ON users(department_id);
+CREATE INDEX IF NOT EXISTS idx_fk_users_role_id ON users(role_id);
+CREATE INDEX IF NOT EXISTS idx_fk_sessions_user_id ON sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_fk_requests_owner_id ON requests(owner_id);
+CREATE INDEX IF NOT EXISTS idx_fk_requests_department_id ON requests(department_id);
+CREATE INDEX IF NOT EXISTS idx_fk_vacancies_department_id ON vacancies(department_id);
+CREATE INDEX IF NOT EXISTS idx_fk_vacancies_request_id ON vacancies(request_id);
+CREATE INDEX IF NOT EXISTS idx_fk_vacancy_competencies_competency_id ON vacancy_competencies(competency_id);
+CREATE INDEX IF NOT EXISTS idx_fk_assessments_assessor_id ON assessments(assessor_id);
+CREATE INDEX IF NOT EXISTS idx_fk_assessments_competency_id ON assessments(competency_id);
+CREATE INDEX IF NOT EXISTS idx_fk_interviews_interviewer_id ON interviews(interviewer_id);
+CREATE INDEX IF NOT EXISTS idx_fk_interviews_application_id ON interviews(application_id);
+CREATE INDEX IF NOT EXISTS idx_fk_adaptation_plans_mentor_id ON adaptation_plans(mentor_id);
+CREATE INDEX IF NOT EXISTS idx_fk_adaptation_plans_employee_id ON adaptation_plans(employee_id);
+CREATE INDEX IF NOT EXISTS idx_fk_adaptation_tasks_plan_id ON adaptation_tasks(plan_id);
+CREATE INDEX IF NOT EXISTS idx_fk_file_documents_owner_id ON file_documents(owner_id);
+CREATE INDEX IF NOT EXISTS idx_fk_audit_events_actor_id ON audit_events(actor_id);
+
 INSERT INTO "roles" ("id","title") VALUES ('admin','Администратор');
 
 INSERT INTO "roles" ("id","title") VALUES ('hr','Специалист службы персонала');
