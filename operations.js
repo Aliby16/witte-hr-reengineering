@@ -16,6 +16,20 @@ export async function additionalOperations(request, env, user, pathname) {
   if (request.method !== 'POST') return null;
   const staffRoles = ['admin','hr'];
 
+  if(pathname.startsWith('/api/file-rename/')){
+    requireRole(user,['admin','hr','candidate']);const id=pathname.slice('/api/file-rename/'.length),body=await parseBody(request);
+    const file=await dbOne(env,'SELECT * FROM file_documents WHERE id=?',[id]);must(file,'Документ не найден.',404);
+    must(file.owner_id===user.id,'Переименовывать можно только собственные документы.',403);
+    const name=safeText(body.name,145);must(name.length>=2&&!/[\/\\\u0000-\u001F]/.test(name),'Укажите имя без пути и управляющих символов.');
+    const stem=name.replace(/\.pdf$/i,'').replace(/[^\p{L}\p{N}._ -]/gu,'_').replace(/^[. ]+|[. ]+$/g,'');
+    must(stem.length>=2,'Укажите имя документа не короче 2 символов.');
+    await env.DB.batch([
+      statement(env,'UPDATE file_documents SET original_name=? WHERE id=? AND owner_id=?',[stem+'.pdf',id,user.id]),
+      auditStatement(env,user,'Переименование документа','file',id,stem+'.pdf')
+    ]);
+    return json({ok:true});
+  }
+
   if(pathname.startsWith('/api/plan-edit/')){
     requireRole(user,staffRoles);const id=pathname.slice('/api/plan-edit/'.length),body=await parseBody(request);
     const plan=await dbOne(env,'SELECT * FROM adaptation_plans WHERE id=?',[id]);must(plan,'План не найден.',404);

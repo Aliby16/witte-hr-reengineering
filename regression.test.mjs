@@ -49,6 +49,15 @@ async function fixture(t){
   return {env,DB,call,auth};
 }
 
+test('переименование проверяет владельца и сохраняет ключ содержимого',async t=>{
+  const {call,DB}=await fixture(t);const data=new FormData();data.set('file',new File(['%PDF-1.7\n%%EOF'],'original.pdf',{type:'application/pdf'}));
+  const {id}=await(await call('/api/files','POST',data,'candidate')).json();const before=await DB.prepare('SELECT object_key FROM file_documents WHERE id=?').bind(id).first();
+  assert.equal((await call('/api/file-rename/'+id,'POST',{name:'Отчёт'},'candidate2')).status,403);
+  assert.equal((await call('/api/file-rename/'+id,'POST',{name:'Отчёт'},'candidate')).status,200);
+  const row=await DB.prepare('SELECT original_name,object_key FROM file_documents WHERE id=?').bind(id).first();
+  assert.equal(row.original_name,'Отчёт.pdf');assert.equal(row.object_key,before.object_key);
+});
+
 test('PDF проверяется по MIME, окончанию содержимого и безопасному имени',async t=>{
   const {call,DB}=await fixture(t);
   const send=async(content,name,type)=>{const data=new FormData();data.set('file',new File([content],name,{type}));return call('/api/files','POST',data,'candidate');};
