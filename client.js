@@ -90,12 +90,14 @@ export function clientBootstrap(safeReturnPath) {
   }
   function toolbar(action='',text='Добавить') {
     const statuses=['applications','reports'].includes(currentPage)?['new','review','interview','offer','hired','rejected','withdrawn']:currentPage==='plans'?['active','completed','overdue']:[];
-    return `<div class="filters"><label>Поиск<input id="search" type="search" placeholder="Название, имя или подразделение"></label>${statuses.length?`<label>Состояние<select id="record-status"><option value="">Все состояния</option>${statuses.map(s=>`<option value="${s}">${s==='overdue'?'Есть просрочка':statusNames[s]}</option>`).join('')}</select></label>`:''}${action?button(text,action):''}</div><div id="records"></div>`;
+    const users=currentPage==='users'?`<label>Роль<select id="record-role"><option value="">Все роли</option>${Object.entries(roleNames).map(([key,title])=>`<option value="${key}">${esc(title)}</option>`).join('')}</select></label><label>Доступ<select id="record-active"><option value="">Любой</option><option value="1">Активные</option><option value="0">Заблокированные</option></select></label>`:'';
+    return `<div class="filters"><label>Поиск<input id="search" type="search" placeholder="Название, имя или подразделение"></label>${statuses.length?`<label>Состояние<select id="record-status"><option value="">Все состояния</option>${statuses.map(s=>`<option value="${s}">${s==='overdue'?'Есть просрочка':statusNames[s]}</option>`).join('')}</select></label>`:''}${users}${action?button(text,action):''}</div><div id="records"></div>`;
   }
   function filterRecords(){
     const query=($('#search')?.value||'').toLocaleLowerCase('ru');
     const status=$('#record-status')?.value||'';
-    drawRecords(currentRows.filter(row=>(!status||(status==='overdue'?row.status==='active'&&Number(row.overdue_count)>0:row.status===status))&&Object.values(row).some(value=>String(value??'').toLocaleLowerCase('ru').includes(query))));
+    const role=$('#record-role')?.value||'',active=$('#record-active')?.value??'';
+    drawRecords(currentRows.filter(row=>(!role||row.role_id===role)&&(active===''||String(row.active)===active)&&(!status||(status==='overdue'?row.status==='active'&&Number(row.overdue_count)>0:row.status===status))&&Object.values(row).some(value=>String(value??'').toLocaleLowerCase('ru').includes(query))));
   }
   function privateNav() {
     if(!user) return;
@@ -282,7 +284,7 @@ export function clientBootstrap(safeReturnPath) {
       filterPublicVacancies();
     }
   });
-  document.addEventListener('change',event=>{if(event.target.id==='vacancy-department')filterPublicVacancies();if(event.target.id==='record-status')filterRecords();});
+  document.addEventListener('change',event=>{if(event.target.id==='vacancy-department')filterPublicVacancies();if(['record-status','record-role','record-active'].includes(event.target.id))filterRecords();});
   document.addEventListener('keydown',event=>{
     if(event.key==='Escape') closeModal();
     if(event.key==='Tab'&&$('.modal')) {
