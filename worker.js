@@ -52,7 +52,9 @@ const worker = {
 worker.fetch=async function(request,env){
   const isHead=request.method==='HEAD';
   const response=await worker.dispatch(isHead?new Request(request,{method:'GET'}):request,env);
-  return isHead?new Response(null,{status:response.status,headers:response.headers}):response;
+  const headers=new Headers(response.headers);
+  for(const [name,value]of Object.entries(responseHeaders()))if(name!=='Content-Type'&&!headers.has(name))headers.set(name,value);
+  return new Response(isHead?null:response.body,{status:response.status,headers});
 };
 
 export default worker;

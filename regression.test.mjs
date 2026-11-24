@@ -26,6 +26,15 @@ test('метод неподходящего ресурса возвращает 
   }
 });
 
+test('защитные заголовки сохраняются для редиректа, favicon и ошибки',async()=>{
+  for(const path of ['/app/dashboard','/favicon.ico','/api/me']){
+    const response=await worker.fetch(new Request('http://localhost'+path),{});
+    assert.equal(response.headers.get('x-frame-options'),'DENY');
+    assert.equal(response.headers.get('x-content-type-options'),'nosniff');
+    assert.match(response.headers.get('content-security-policy'),/frame-ancestors 'none'/);
+  }
+});
+
 test('HEAD возвращает статус и заголовки GET без тела',async()=>{
   for(const path of ['/','/assets/styles.css','/assets/client.js','/missing','/app/dashboard']){
     const get=await worker.fetch(new Request('http://localhost'+path),{});
