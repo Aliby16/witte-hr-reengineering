@@ -14,6 +14,7 @@ export function clientBootstrap(safeReturnPath) {
   let user = null;
   let currentRows = [];
   let currentPage = '';
+  let modalOpener=null,previousOverflow='';
   const statusNames = {
     new:'Новый',review:'На рассмотрении',interview:'Собеседование',offer:'Предложение',hired:'Принят',
     rejected:'Отказ',withdrawn:'Отозван',published:'Опубликована',draft:'Черновик',closed:'Закрыта',
@@ -69,10 +70,17 @@ export function clientBootstrap(safeReturnPath) {
     return data;
   }
   function closeModal() {
+    if(!$('.modal'))return;
     $('#modal-root').innerHTML='';
-    root.focus?.();
+    document.body.style.overflow=previousOverflow;
+    if(modalOpener?.isConnected){modalOpener.disabled=false;modalOpener.focus();}else{root.setAttribute('tabindex','-1');root.focus();}
+    modalOpener=null;
   }
   function modal(title,body) {
+    if(!$('.modal')){
+      modalOpener=document.activeElement;previousOverflow=document.body.style.overflow;
+      document.body.style.overflow='hidden';
+    }
     $('#modal-root').innerHTML=`<div class="modal-backdrop"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" tabindex="-1">${button('Закрыть','close','',true)}<h2 id="modal-title">${esc(title)}</h2>${body}</section></div>`;
     $('.modal').focus();
   }
