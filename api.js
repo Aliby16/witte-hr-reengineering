@@ -13,7 +13,7 @@ import { additionalOperations } from './operations.js';
 const STAFF = ['admin', 'hr'];
 
 export function allowedApiMethods(path){
-  if(['/api/me','/api/health','/api/dashboard'].includes(path)||/^\/api\/(list|export)\//.test(path))return ['GET','HEAD'];
+  if(['/api/me','/api/health','/api/dashboard','/api/sessions'].includes(path)||/^\/api\/(list|export)\//.test(path))return ['GET','HEAD'];
   if(path==='/api/profile'||/^\/api\/(applications|plans)\/[^/]+$/.test(path))return ['GET','HEAD','POST'];
   if(/^\/api\/files\/[^/]+$/.test(path))return ['GET','HEAD'];
   if(['/api/demo/start','/api/login','/api/logout','/api/applications','/api/vacancies','/api/assessments','/api/interviews','/api/plans','/api/files','/api/requests','/api/feedback'].includes(path)||
@@ -301,6 +301,11 @@ export async function handleApi(request, env) {
   if (method === 'POST' && path === '/api/login') return login(request, env);
   const user = await readSession(request, env);
   if (method === 'GET' && path === '/api/me') return json({ user: publicUser(user) });
+  if(method==='GET'&&path==='/api/sessions'){
+    requireRole(user,['admin','hr','candidate']);
+    const rows=await dbAll(env,'SELECT expires_at,CASE WHEN token_hash=? THEN 1 ELSE 0 END current_session FROM sessions WHERE user_id=? AND expires_at>? ORDER BY expires_at DESC',[user.token_hash,user.id,now()]);
+    return json({rows});
+  }
   if (!['GET','HEAD'].includes(method)) {
     requireSameOrigin(request);
     if (user) must(equalHash(request.headers.get('x-csrf-token') || '', user.csrf_token), 'Проверка запроса не пройдена. Обновите страницу.', 403);

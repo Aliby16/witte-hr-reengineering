@@ -53,6 +53,15 @@ test('число одновременно активных сессий огра
   assert.equal((await response.json()).user.username,'candidate');
 });
 
+test('список сессий содержит только собственные входы и не раскрывает токены',async t=>{
+  const {call}=await fixture(t);
+  await call('/api/me','GET',undefined,'hr');
+  const response=await call('/api/sessions','GET',undefined,'candidate');
+  const {rows}=await response.json();assert.equal(rows.length,1);assert.equal(rows[0].current_session,1);
+  assert.deepEqual(Object.keys(rows[0]).sort(),['current_session','expires_at']);
+  assert.equal((await call('/api/sessions')).status,401);
+});
+
 test('вход и текущий пользователь сообщают фактическое окончание сессии',async t=>{
   const {call}=await fixture(t);
   const response=await call('/api/me','GET',undefined,'candidate');

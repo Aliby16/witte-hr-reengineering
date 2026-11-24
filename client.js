@@ -95,9 +95,11 @@ export function clientBootstrap() {
   }
   async function showProfile() {
     const {profile}=await api('/api/profile');
+    const {rows:sessions}=await api('/api/sessions');
     root.innerHTML=heading('Мой профиль','Укажите образование, профессиональный опыт и сведения о себе.')+
       form('profile',area('Образование','education',profile.education||'')+area('Профессиональный опыт','experience',profile.experience||'')+area('О себе','about',profile.about||'',false)+
-        `<label class="checkbox-label"><input type="checkbox" name="consent" ${profile.consent?'checked':''}>Подтверждаю использование данных для демонстрации отклика</label>`,'Сохранить профиль');
+        `<label class="checkbox-label"><input type="checkbox" name="consent" ${profile.consent?'checked':''}>Подтверждаю использование данных для демонстрации отклика</label>`,'Сохранить профиль')+
+      '<h2>Активные сессии</h2>'+table(['Сессия','Действует до'],sessions.map(s=>[s.current_session?'Текущая':'Другой вход',date(s.expires_at)]));
   }
   async function showList(page) {
     currentPage=page;
