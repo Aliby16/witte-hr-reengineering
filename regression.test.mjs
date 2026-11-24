@@ -49,6 +49,15 @@ async function fixture(t){
   return {env,DB,call,auth};
 }
 
+test('история отклика скрывает внутренние записи оценки от соискателя',async t=>{
+  const {call,DB}=await fixture(t);
+  await DB.prepare('INSERT INTO audit_events (id,actor_id,action,entity_type,entity_id,details,created_at) VALUES (?,?,?,?,?,?,?)').bind('internal','hr','Оценка компетенции','application','app-1','Внутренняя запись','2026-01-01').run();
+  const candidate=await(await call('/api/applications/app-1','GET',undefined,'candidate')).json();
+  const staff=await(await call('/api/applications/app-1','GET',undefined,'hr')).json();
+  assert.equal(candidate.history.length,0);assert.equal(staff.history.length,1);
+  assert.equal((await call('/api/applications/app-1','GET',undefined,'candidate2')).status,403);
+});
+
 test('автор изменяет сообщение только нового отклика и с актуальной версией',async t=>{
   const {call}=await fixture(t);const body={version:1,cover_letter:'Уточнённое сопроводительное сообщение'};
   assert.equal((await call('/api/application-letter/app-4','POST',body,'candidate')).status,403);

@@ -227,7 +227,7 @@ export function clientBootstrap(safeReturnPath) {
     $('#records').innerHTML=table(headers,cells)+`<nav class="actions" aria-label="Страницы реестра"><span role="status">Записей: ${totalRows}. Страница ${recordPage} из ${totalPages}</span>${recordPage>1?button('Назад','records-prev','',true):''}${recordPage<totalPages?button('Далее','records-next','',true):''}</nav>`+(currentPage==='vacancies'&&user.role_id==='admin'?`<div class="actions">${button('Опубликовать выбранные черновики','bulk-publish','',true)}</div>`:'');
   }
   async function applicationModal(id) {
-    const {application:a,assessments}=await api(`/api/applications/${encodeURIComponent(id)}`);
+    const {application:a,assessments,history}=await api(`/api/applications/${encodeURIComponent(id)}`);
     const transitions={new:['review','rejected'],review:['interview','rejected'],interview:['offer','rejected'],offer:['hired','rejected']};
     let body=`<p><strong>${esc(a.candidate_name)}</strong><br>${esc(a.vacancy_title)}</p><p>${pill(a.status)}</p><p>${esc(a.cover_letter)}</p>`;
     if(a.decision_note) body+=`<p><strong>Обоснование решения:</strong> ${esc(a.decision_note)}</p>`;
@@ -239,6 +239,7 @@ export function clientBootstrap(safeReturnPath) {
       if(transitions[a.status]?.length) body+=`<h3>Изменить этап</h3>`+form('application-status',`<input type="hidden" name="version" value="${a.version}">`+select('Следующий этап','status',transitions[a.status].map(s=>[s,statusNames[s]]))+area('Обоснование решения','decision_note','',false),'Сохранить решение',id);
       if(['review','interview'].includes(a.status)) body+=`<h3>Назначить собеседование</h3>`+form('interview',`<input type="hidden" name="application_id" value="${esc(id)}">`+input('Дата и время','scheduled_at','datetime-local')+input('Формат и место','format','text','Видеовстреча · пример'),'Назначить встречу');
     }
+    body+='<h3>История отклика</h3>'+table(['Дата','Действие','Подробности'],history.map(event=>[date(event.created_at),esc(event.action),esc(event.details)]));
     modal('Карточка отклика',body);
   }
   async function planModal(id) {

@@ -361,12 +361,14 @@ export async function handleApi(request, env) {
     const id = path.slice(18);
     const row = await applicationFor(env, id, user);
     if (method === 'GET') {
+      const events=await dbAll(env,'SELECT action,details,created_at FROM audit_events WHERE entity_type=? AND entity_id=? ORDER BY created_at,id',['application',id]);
+      const history=user.role_id==='candidate'?events.filter(event=>['Создание отклика','Изменение этапа','Отзыв отклика','Изменение сопроводительного сообщения'].includes(event.action)):events;
       const assessments = user.role_id === 'candidate' ? [] : await dbAll(env,
         `SELECT c.*,vc.target_level,a.score,a.evidence FROM vacancy_competencies vc
          JOIN competencies c ON c.id=vc.competency_id
          LEFT JOIN assessments a ON a.competency_id=c.id AND a.application_id=?
          WHERE vc.vacancy_id=? ORDER BY c.title`, [id, row.vacancy_id]);
-      return json({ application: row, assessments });
+      return json({ application: row, assessments, history });
     }
     if (method === 'POST') {
       requireRole(user, STAFF);
