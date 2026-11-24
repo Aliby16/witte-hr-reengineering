@@ -6,10 +6,13 @@
   "scripts": {
     "dev": "node local-server.mjs",
     "start": "node local-server.mjs",
-    "test": "node --test app.test.mjs",
+    "test": "node --test app.test.mjs regression.test.mjs",
     "build": "node build.mjs",
-    "validate": "node scripts/validate-artifact.mjs"
+    "validate": "node scripts/validate-artifact.mjs",
+    "db:export": "node export-database.mjs"
   },
   "engines": { "node": ">=24" },
+  "dependencies": { "@neondatabase/serverless": "1.2.1" },
+  "devDependencies": { "esbuild": "0.28.2" },
   "optionalDependencies": { "pg": "^8.16.3" }
 }

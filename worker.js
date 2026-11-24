@@ -5,6 +5,7 @@ import { renderShell } from './ui.js';
 import { STYLES } from './styles.js';
 import { CLIENT } from './client.js';
 import { PUBLIC_PAGES } from './public.js';
+import { NeonAdapter } from './neon-db.js';
 
 const PRIVATE_ROUTES = {
   admin: ['dashboard','users','departments','roles','audit','settings','requests','vacancies','applications','interviews','plans','reports','files','notifications','feedback','competencies','profile'],
@@ -16,6 +17,7 @@ const worker = {
   async fetch(request, env) {
     const url = new URL(request.url);
     try {
+      if (env.DATABASE_URL) env={...env,DB:new NeonAdapter(env.DATABASE_URL)};
       if (url.pathname.startsWith('/api/')) return await handleApi(request, env);
       if (request.method !== 'GET' && request.method !== 'HEAD') return json({error:'Метод не поддерживается.'},405);
       if (url.pathname === '/assets/styles.css') return new Response(STYLES,{headers:responseHeaders('text/css; charset=utf-8')});

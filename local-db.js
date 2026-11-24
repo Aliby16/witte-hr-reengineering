@@ -2,6 +2,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { readFileSync, mkdirSync, existsSync } from 'node:fs';
 import { readFile, writeFile, mkdir, unlink } from 'node:fs/promises';
 import path from 'node:path';
+import { postgresParameters, postgresRows } from './neon-db.js';
 
 export class SqliteAdapter {
   constructor(filename=':memory:') {
@@ -50,14 +51,13 @@ export class PostgresAdapter {
     return adapter;
   }
   prepare(sql) {
-    let counter=0;
-    const translated=sql.replace(/\?/g,()=>`$${++counter}`);
+    const translated=postgresParameters(sql);
     const pool=this.pool;
     return {
       sql:translated,values:[],
       bind(...values){this.values=values;return this;},
-      async all(){const result=await pool.query(translated,this.values);return {results:result.rows};},
-      async first(){const result=await pool.query(translated,this.values);return result.rows[0]||null;},
+      async all(){const result=await pool.query(translated,this.values);return {results:postgresRows(result)};},
+      async first(){const result=await pool.query(translated,this.values);return postgresRows(result)[0]||null;},
       async run(){const result=await pool.query(translated,this.values);return {success:true,meta:{changes:result.rowCount}};}
     };
   }

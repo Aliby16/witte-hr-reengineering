@@ -1,21 +1,18 @@
-import { readFileSync, writeFileSync, mkdirSync, rmSync, copyFileSync } from 'node:fs';
-import { spawnSync } from 'node:child_process';
+import { mkdirSync, rmSync, copyFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { build } from 'esbuild';
 
-const root=path.dirname(new URL(import.meta.url).pathname);
-const files=['security.js','db.js','seed.js','documents.js','public.js','styles.js','ui.js','client.js','operations.js','api.js','worker.js'];
-const pieces=files.map(filename=>{
-  let text=readFileSync(path.join(root,filename),'utf8');
-  text=text.replace(/^import\s+[\s\S]*?from\s+['"][^'"]+['"];?\s*$/gm,'');
-  text=text.replace(/^export (?!default)/gm,'');
-  return `\n// Source module: ${filename}\n${text}`;
-});
+const root=path.dirname(fileURLToPath(import.meta.url));
 rmSync(path.join(root,'dist'),{recursive:true,force:true});
 mkdirSync(path.join(root,'dist/server'),{recursive:true});
 mkdirSync(path.join(root,'dist/.openai'),{recursive:true});
-const target=path.join(root,'dist/server/index.js');
-writeFileSync(target,pieces.join('\n'));
+await build({
+  entryPoints:[path.join(root,'worker.js')],
+  outfile:path.join(root,'dist/server/index.js'),
+  bundle:true,format:'esm',platform:'browser',target:'es2022',
+  conditions:['workerd','worker','browser'],
+  minify:false,legalComments:'none',logLevel:'warning'
+});
 copyFileSync(path.join(root,'.openai/hosting.json'),path.join(root,'dist/.openai/hosting.json'));
-const check=spawnSync(process.execPath,['--check',target],{encoding:'utf8'});
-if(check.status!==0){process.stderr.write(check.stderr);process.exit(check.status||1);}
-console.log('Worker собран и прошёл проверку синтаксиса.');
+console.log('Worker собран с PostgreSQL HTTP-драйвером.');
