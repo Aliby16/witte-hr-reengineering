@@ -94,7 +94,7 @@ async function dashboard(env, user) {
   for (const app of apps) statusCounts[app.status] = (statusCounts[app.status] || 0) + 1;
   const today = new Date().toISOString().slice(0, 10);
   const tasks = await dbAll(env,
-    `SELECT t.*,p.employee_id FROM adaptation_tasks t JOIN adaptation_plans p ON p.id=t.plan_id
+    `SELECT t.*,p.employee_id,p.title plan_title,u.full_name employee_name FROM adaptation_tasks t JOIN adaptation_plans p ON p.id=t.plan_id JOIN users u ON u.id=p.employee_id
      ${user.role_id === 'candidate' ? 'WHERE p.employee_id=?' : ''}`, user.role_id === 'candidate' ? [user.id] : []);
   const vacancies = await dbOne(env, "SELECT COUNT(*) total FROM vacancies WHERE status='published'");
   return {
@@ -102,6 +102,7 @@ async function dashboard(env, user) {
     vacancies: vacancies.total,
     plans: plans.length,
     overdue: tasks.filter(t => t.status !== 'done' && t.due_date < today).length,
+    overdue_tasks:tasks.filter(t=>t.status!=='done'&&t.due_date<today).sort((a,b)=>a.due_date.localeCompare(b.due_date)).slice(0,20),
     completed_tasks: tasks.filter(t => t.status === 'done').length,
     all_tasks: tasks.length,
     statuses: statusCounts,

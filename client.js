@@ -128,7 +128,8 @@ export function clientBootstrap(safeReturnPath) {
       `<div class="grid"><article class="card"><span class="small">${user.role_id==='candidate'?'Мои отклики':'Отклики в работе'}</span><span class="number">${data.applications}</span><a href="/app/applications">Открыть реестр</a></article><article class="card"><span class="small">Планы адаптации</span><span class="number">${data.plans}</span><a href="/app/plans">Посмотреть планы</a></article><article class="card"><span class="small">Просроченные задания</span><span class="number">${data.overdue}</span><span class="small">Контроль на текущую дату</span></article></div>`+
       `<div class="section-heading"><h2>Этапы рассмотрения</h2><span class="small muted">Фактическое состояние записей</span></div><section class="card">${Object.entries(statusNames).filter(([key])=>['new','review','interview','offer','hired','rejected'].includes(key)).map(([key,label])=>`<div class="bar-row"><span>${label}</span><progress max="${Math.max(data.applications,1)}" value="${data.statuses[key]||0}" aria-label="${label}"></progress><strong>${data.statuses[key]||0}</strong></div>`).join('')}</section>`+
       `<div class="section-heading"><h2>Последние отклики</h2><a href="/app/applications">Все отклики</a></div>`+
-      table(['Кандидат','Вакансия','Этап'],data.recent.map(a=>[esc(a.candidate_name),esc(a.vacancy_title),pill(a.status)]));
+      table(['Кандидат','Вакансия','Этап'],data.recent.map(a=>[esc(a.candidate_name),esc(a.vacancy_title),pill(a.status)]))+
+      '<h2>Задания с истёкшим сроком</h2>'+table(['Сотрудник','Задание','Срок','План'],data.overdue_tasks.map(t=>[esc(t.employee_name),esc(t.title),date(t.due_date),button('Открыть','plan',t.plan_id,true)]));
   }
   async function showPublicVacancies() {
     const {rows}=await api('/api/list/vacancies');

@@ -49,6 +49,15 @@ async function fixture(t){
   return {env,DB,call,auth};
 }
 
+test('просроченные задания в обзоре изолированы по владельцу',async t=>{
+  const {call,DB}=await fixture(t);
+  await DB.prepare("UPDATE adaptation_tasks SET due_date='2020-01-01',status='todo'").run();
+  const own=await(await call('/api/dashboard','GET',undefined,'candidate3')).json();
+  const other=await(await call('/api/dashboard','GET',undefined,'candidate')).json();
+  assert.ok(own.overdue_tasks.length>0);assert.equal(other.overdue_tasks.length,0);
+  assert.ok(own.overdue_tasks.every(task=>task.employee_id==='candidate-3'));
+});
+
 test('число одновременно активных сессий ограничено пятью',async t=>{
   const {call,DB}=await fixture(t);let cookie;
   for(let i=0;i<7;i++){
