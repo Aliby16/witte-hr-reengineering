@@ -114,9 +114,9 @@ export function clientBootstrap(safeReturnPath) {
     if(!user) return;
     const candidate=['dashboard','profile','applications','interviews','plans','files','notifications'];
     const staff=['dashboard','requests','vacancies','applications','interviews','plans','competencies','reports','files','notifications','feedback'];
-    const admin=['dashboard','users','departments','roles','audit','settings','requests','vacancies','applications','interviews','plans','reports','files','feedback'];
+    const admin=['dashboard','users','departments','roles','audit','settings','requests','vacancies','applications','interviews','plans','reports','files','notifications','feedback','profile'];
     const pages=user.role_id==='candidate'?candidate:user.role_id==='admin'?admin:staff;
-    $('#private-nav').innerHTML=`<hr class="nav-divider"><nav aria-label="Личный кабинет"><p class="nav-label">${esc(roleNames[user.role_id])}</p>${pages.map(p=>`<a class="nav-link${location.pathname===`/app/${p}`?' active':''}" href="/app/${p}">${esc(p==='applications'&&user.role_id==='candidate'?'Мои отклики':p==='plans'&&user.role_id==='candidate'?'Моя адаптация':privateLabels[p])}</a>`).join('')}${button('Выйти','logout','',true)}</nav>`;
+    $('#private-nav').innerHTML=`<hr class="nav-divider"><nav aria-label="Личный кабинет"><p class="nav-label">${esc(roleNames[user.role_id])}</p>${pages.map(p=>`<a class="nav-link${location.pathname===`/app/${p}`?' active':''}" href="/app/${p}">${esc(p==='applications'&&user.role_id==='candidate'?'Мои отклики':p==='plans'&&user.role_id==='candidate'?'Моя адаптация':privateLabels[p])}${p==='notifications'&&user.unread_count?` <span class="pill" aria-label="Непрочитанных: ${user.unread_count}">${user.unread_count}</span>`:''}</a>`).join('')}${button('Выйти','logout','',true)}</nav>`;
   }
   async function showLogin() {
     root.innerHTML=heading('Вход в личный кабинет','Выберите роль или введите данные демонстрационной учётной записи.')+

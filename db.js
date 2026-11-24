@@ -34,7 +34,8 @@ export async function readSession(request, env) {
   if (!raw || raw.length > 150) return null;
   const tokenHash = await digest(raw);
   const user = await dbOne(env,
-    `SELECT u.id,u.username,u.full_name,u.role_id,u.department_id,s.csrf_token,s.token_hash,s.expires_at
+    `SELECT u.id,u.username,u.full_name,u.role_id,u.department_id,s.csrf_token,s.token_hash,s.expires_at,
+     (SELECT COUNT(*) FROM notifications n WHERE n.user_id=u.id AND n.read_at IS NULL) unread_count
      FROM sessions s JOIN users u ON u.id=s.user_id
      WHERE s.token_hash=? AND s.expires_at>? AND u.active=1`, [tokenHash, now()]);
   return user;
@@ -44,7 +45,7 @@ export function publicUser(user) {
   if (!user) return null;
   return {
     id: user.id, username: user.username, full_name: user.full_name,
-    role_id: user.role_id, department_id: user.department_id, csrf_token: user.csrf_token, expires_at:user.expires_at
+    role_id: user.role_id, department_id: user.department_id, csrf_token: user.csrf_token, expires_at:user.expires_at,unread_count:Number(user.unread_count||0)
   };
 }
 
