@@ -49,6 +49,14 @@ async function fixture(t){
   return {env,DB,call,auth};
 }
 
+test('исправление подтверждения не меняет дату выполнения и фиксируется в журнале',async t=>{
+  const {call,DB}=await fixture(t),before=await DB.prepare('SELECT * FROM adaptation_tasks WHERE id=?').bind('task-1').first();
+  const response=await call('/api/task-evidence/task-1','POST',{expected_evidence:before.evidence,evidence:'Уточнённое подтверждение выполнения задания'},'hr');
+  assert.equal(response.status,200);
+  assert.equal((await DB.prepare('SELECT completed_at FROM adaptation_tasks WHERE id=?').bind('task-1').first()).completed_at,before.completed_at);
+  assert.equal((await DB.prepare('SELECT COUNT(*) total FROM audit_events WHERE action=?').bind('Исправление подтверждения').first()).total,1);
+});
+
 test('изменение задания контролирует состояние и границы плана',async t=>{
   const {call}=await fixture(t);const body={title:'Уточнённое содержание задания',due_date:'2026-12-01'};
   assert.equal((await call('/api/task-edit/task-1','POST',body,'hr')).status,409);

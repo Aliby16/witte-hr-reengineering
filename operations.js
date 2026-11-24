@@ -16,6 +16,19 @@ export async function additionalOperations(request, env, user, pathname) {
   if (request.method !== 'POST') return null;
   const staffRoles = ['admin','hr'];
 
+  if(pathname.startsWith('/api/task-evidence/')){
+    requireRole(user,staffRoles);const id=pathname.slice('/api/task-evidence/'.length),body=await parseBody(request);
+    const task=await dbOne(env,'SELECT * FROM adaptation_tasks WHERE id=?',[id]);must(task,'Задание не найдено.',404);
+    const plan=await dbOne(env,'SELECT status FROM adaptation_plans WHERE id=?',[task.plan_id]);
+    must(task.status==='done'&&plan.status==='active','Подтверждение изменяется до завершения плана.',409);
+    const evidence=safeText(body.evidence,2000);must(evidence.length>=10,'Опишите подтверждение не короче 10 символов.');
+    must(body.expected_evidence===task.evidence,'Подтверждение уже изменено. Обновите план.',409);
+    const changed=await dbRun(env,"UPDATE adaptation_tasks SET evidence=? WHERE id=? AND status='done' AND evidence=?",[evidence,id,task.evidence]);
+    must(changed.meta?.changes===1,'Подтверждение уже изменено.',409);
+    await auditStatement(env,user,'Исправление подтверждения','task',id,`${task.evidence} — ${evidence}`).run();
+    return json({ok:true});
+  }
+
   if(pathname.startsWith('/api/task-edit/')){
     requireRole(user,staffRoles);const id=pathname.slice('/api/task-edit/'.length),body=await parseBody(request);
     const task=await dbOne(env,'SELECT * FROM adaptation_tasks WHERE id=?',[id]);must(task,'Задание не найдено.',404);
