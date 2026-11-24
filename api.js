@@ -234,6 +234,9 @@ async function uploadFile(request, env, user) {
   must(length <= 2200000, 'Размер файла превышает 2 МБ.', 413);
   const data = await request.formData();
   const file = data.get('file');
+  const replaceId=safeText(data.get('replace_id'),100);
+  const existing=replaceId?await dbOne(env,'SELECT * FROM file_documents WHERE id=?',[replaceId]):null;
+  if(replaceId){must(existing,'Документ не найден.',404);must(existing.owner_id===user.id,'Обновлять можно только собственные документы.',403);}
   must(file && typeof file.arrayBuffer === 'function', 'Выберите PDF-файл.');
   must(file.size > 0 && file.size <= 2097152, 'Допустим PDF-файл до 2 МБ.', 413);
   must(file.name.toLowerCase().endsWith('.pdf'), 'Разрешены только PDF-файлы.');
@@ -242,22 +245,25 @@ async function uploadFile(request, env, user) {
   const bytes = await file.arrayBuffer();
   must(/^%PDF-[12]\.\d/.test(new TextDecoder().decode(bytes.slice(0,8)))&&
     /%%EOF\s*$/.test(new TextDecoder().decode(bytes.slice(Math.max(0,bytes.byteLength-2048)))),'Содержимое файла не соответствует PDF.');
-  const id = uid('file');
-  const objectKey = `${user.id}/${id}.pdf`;
+  const id = existing?.id||uid('file');
+  const objectKey = existing?.object_key||`${user.id}/${id}.pdf`;
   const stem=safeText(file.name.slice(0,-4),145).replace(/[^\p{L}\p{N}._ -]/gu,'_').replace(/^[. ]+|[. ]+$/g,'');
   const filename=(stem||'document')+'.pdf';
+  const previous=existing?await env.BUCKET.get(objectKey):null;
+  const previousBytes=previous?await new Response(previous.body).arrayBuffer():null;
   await env.BUCKET.put(objectKey, bytes, { httpMetadata: { contentType: 'application/pdf' } });
   try {
     await env.DB.batch([
-      statement(env, 'INSERT INTO file_documents (id,owner_id,original_name,object_key,mime_type,size_bytes,created_at) VALUES (?,?,?,?,?,?,?)',
-        [id, user.id, filename, objectKey, 'application/pdf', file.size, now()]),
-      auditStatement(env, user, 'Загрузка документа', 'file', id, filename)
+      existing?statement(env,'UPDATE file_documents SET original_name=?,size_bytes=? WHERE id=? AND owner_id=?',[filename,file.size,id,user.id]):
+        statement(env,'INSERT INTO file_documents (id,owner_id,original_name,object_key,mime_type,size_bytes,created_at) VALUES (?,?,?,?,?,?,?)',[id,user.id,filename,objectKey,'application/pdf',file.size,now()]),
+      auditStatement(env,user,existing?'Обновление документа':'Загрузка документа','file',id,filename)
     ]);
   } catch (error) {
-    await env.BUCKET.delete(objectKey);
+    if(previousBytes)await env.BUCKET.put(objectKey,previousBytes,{httpMetadata:{contentType:'application/pdf'}});
+    else await env.BUCKET.delete(objectKey);
     throw error;
   }
-  return json({ ok: true, id }, 201);
+  return json({ ok: true, id }, existing?200:201);
 }
 
 async function listRecords(env, user, type) {

@@ -205,7 +205,7 @@ export function clientBootstrap(safeReturnPath) {
       cells=rows.map(c=>[esc(c.title),esc(c.description),esc(c.weight)]);
     } else if(currentPage==='files') {
       headers=['Документ','Размер','Дата загрузки','Скачать'];
-      cells=rows.map(f=>[esc(f.original_name),`${Math.ceil(f.size_bytes/1024)} КБ`,date(f.created_at),`<div class="actions"><a href="/api/files/${encodeURIComponent(f.id)}">Скачать PDF</a>${f.owner_id===user.id?button('Переименовать','rename-file',f.id,true):''}</div>`]);
+      cells=rows.map(f=>[esc(f.original_name),`${Math.ceil(f.size_bytes/1024)} КБ`,date(f.created_at),`<div class="actions"><a href="/api/files/${encodeURIComponent(f.id)}">Скачать PDF</a>${f.owner_id===user.id?button('Переименовать','rename-file',f.id,true)+button('Обновить PDF','replace-file',f.id,true):''}</div>`]);
     } else if(currentPage==='notifications') {
       headers=['Уведомление','Сообщение','Дата','Прочитано'];
       cells=rows.map(n=>[esc(n.title),esc(n.body),date(n.created_at),n.read_at?'Да':button('Отметить','read-notice',n.id,true)]);
@@ -353,6 +353,7 @@ export function clientBootstrap(safeReturnPath) {
       else if(action==='rename-file'){
         const row=currentRows.find(f=>f.id===id);modal('Название документа',form('rename-file',input('Название без расширения','name','text',row.original_name.replace(/\.pdf$/i,'')),'Сохранить',id));
       }
+      else if(action==='replace-file')modal('Обновление PDF',form('replace-file',`<input type="hidden" name="replace_id" value="${esc(id)}"><label>Новая версия PDF до 2 МБ<input type="file" name="file" accept="application/pdf,.pdf" required></label>`,'Обновить'));
       else if(action==='user-department'){
         const row=currentRows.find(u=>u.id===id),departments=(await api('/api/list/departments')).rows;
         modal('Подразделение пользователя',form('user-department',select('Подразделение','department_id',[['','Без подразделения'],...departments.map(d=>[d.id,d.title])],row.department_id||''),'Сохранить',id));
@@ -455,6 +456,7 @@ export function clientBootstrap(safeReturnPath) {
       else if(action==='edit-task'){await api(`/api/task-edit/${encodeURIComponent(id)}`,'POST',data);await planModal(data.plan_id);}
       else if(action==='edit-evidence'){await api(`/api/task-evidence/${encodeURIComponent(id)}`,'POST',data);await planModal(data.plan_id);}
       else if(action==='upload'){await api('/api/files','POST',raw);await showList('files');}
+      else if(action==='replace-file'){await api('/api/files','POST',raw);closeModal();await showList('files');}
       else if(action==='rename-file'){await api(`/api/file-rename/${encodeURIComponent(id)}`,'POST',data);closeModal();await showList('files');}
       else if(action==='feedback'){
         const result=await api('/api/feedback','POST',data);formElement.reset();

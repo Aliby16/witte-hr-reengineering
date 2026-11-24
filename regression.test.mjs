@@ -58,6 +58,16 @@ async function fixture(t){
   return {env,DB,call,auth};
 }
 
+test('новая версия PDF сохраняет запись и допускается только владельцу',async t=>{
+  const {call,DB}=await fixture(t);const first=new FormData();first.set('file',new File(['%PDF-1.4\n%%EOF'],'a.pdf',{type:'application/pdf'}));
+  const {id}=await(await call('/api/files','POST',first,'candidate')).json();
+  const update=()=>{const data=new FormData();data.set('replace_id',id);data.set('file',new File(['%PDF-1.7\nnew\n%%EOF'],'b.pdf',{type:'application/pdf'}));return data;};
+  assert.equal((await call('/api/files','POST',update(),'candidate2')).status,403);
+  assert.equal((await call('/api/files','POST',update(),'candidate')).status,200);
+  assert.equal((await DB.prepare('SELECT original_name FROM file_documents WHERE id=?').bind(id).first()).original_name,'b.pdf');
+  assert.match(await(await call('/api/files/'+id,'GET',undefined,'candidate')).text(),/new/);
+});
+
 test('начальные пользователи имеют индивидуальные соли и разные хеши',async t=>{
   const {DB}=await fixture(t);const {results:rows}=await DB.prepare('SELECT salt,password_hash FROM users').all();
   assert.equal(new Set(rows.map(row=>row.salt)).size,6);

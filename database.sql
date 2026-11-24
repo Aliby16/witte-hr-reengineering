@@ -214,53 +214,53 @@ INSERT INTO "departments" ("id","title","description") VALUES ('it','Депар�
 
 INSERT INTO "departments" ("id","title","description") VALUES ('office','Канцелярия','Регистрация и сопровождение документов');
 
-INSERT INTO "users" ("id","username","full_name","password_hash","salt","role_id","department_id","active","created_at") VALUES ('admin','admin','Администратор','24e8eb9f75f53f4a67d5b6d98bc4212ce7c0d0d7bccb9ef242de157e14812d19','f8779f14-8683-47e6-ae9c-ec493b29dea1','admin','it',1,'2026-11-24T11:29:00.630Z');
+INSERT INTO "users" ("id","username","full_name","password_hash","salt","role_id","department_id","active","created_at") VALUES ('admin','admin','Администратор','3ef430eba77a75ceb455865fe4d5ec674f5b9b58a9a5458c223e9203f50af20c','8136ed4a-55d1-4a0a-b613-8e3639f07883','admin','it',1,'2026-11-24T16:41:17.255Z');
 
-INSERT INTO "users" ("id","username","full_name","password_hash","salt","role_id","department_id","active","created_at") VALUES ('hr','hr','Специалист службы персонала','24e8eb9f75f53f4a67d5b6d98bc4212ce7c0d0d7bccb9ef242de157e14812d19','f8779f14-8683-47e6-ae9c-ec493b29dea1','hr','personnel',1,'2026-11-24T11:29:00.630Z');
+INSERT INTO "users" ("id","username","full_name","password_hash","salt","role_id","department_id","active","created_at") VALUES ('hr','hr','Специалист службы персонала','a166f3aaaaa33cc5cfbdf016832bcfd69b64a6c9db20f7c1c3338487ab88b28e','28d7a1be-55ab-4058-bebd-e3d95124b140','hr','personnel',1,'2026-11-24T16:41:17.255Z');
 
-INSERT INTO "users" ("id","username","full_name","password_hash","salt","role_id","department_id","active","created_at") VALUES ('candidate','candidate','Дарья Волкова','24e8eb9f75f53f4a67d5b6d98bc4212ce7c0d0d7bccb9ef242de157e14812d19','f8779f14-8683-47e6-ae9c-ec493b29dea1','candidate',NULL,1,'2026-11-24T11:29:00.630Z');
+INSERT INTO "users" ("id","username","full_name","password_hash","salt","role_id","department_id","active","created_at") VALUES ('candidate','candidate','Дарья Волкова','93cd5697cdc62d551a0d1b9070df804b4ff1549de85c19bf986d85296f9a6d60','26cd09ab-0b5d-44c5-87cc-feb194cfd6fa','candidate',NULL,1,'2026-11-24T16:41:17.255Z');
 
-INSERT INTO "users" ("id","username","full_name","password_hash","salt","role_id","department_id","active","created_at") VALUES ('candidate-2','candidate2','Михаил Белов','24e8eb9f75f53f4a67d5b6d98bc4212ce7c0d0d7bccb9ef242de157e14812d19','f8779f14-8683-47e6-ae9c-ec493b29dea1','candidate',NULL,1,'2026-11-24T11:29:00.630Z');
+INSERT INTO "users" ("id","username","full_name","password_hash","salt","role_id","department_id","active","created_at") VALUES ('candidate-2','candidate2','Михаил Белов','f718c331779a16be4a68363edb0c4b6fd8b1bfb4953f0c102606c961a2f5f7d1','6b42bbb1-b23a-419a-9d59-75a571e2859e','candidate',NULL,1,'2026-11-24T16:41:17.255Z');
 
-INSERT INTO "users" ("id","username","full_name","password_hash","salt","role_id","department_id","active","created_at") VALUES ('candidate-3','candidate3','Анна Орлова','24e8eb9f75f53f4a67d5b6d98bc4212ce7c0d0d7bccb9ef242de157e14812d19','f8779f14-8683-47e6-ae9c-ec493b29dea1','candidate',NULL,1,'2026-11-24T11:29:00.630Z');
+INSERT INTO "users" ("id","username","full_name","password_hash","salt","role_id","department_id","active","created_at") VALUES ('candidate-3','candidate3','Анна Орлова','35bd59c5c747e3095174e067dbbb27ad6307c2df748f119a8e9edd9102509c7a','8cb253c4-94f1-4664-9ffd-9f06438aef8c','candidate',NULL,1,'2026-11-24T16:41:17.255Z');
 
-INSERT INTO "users" ("id","username","full_name","password_hash","salt","role_id","department_id","active","created_at") VALUES ('candidate-4','candidate4','Иван Морозов','24e8eb9f75f53f4a67d5b6d98bc4212ce7c0d0d7bccb9ef242de157e14812d19','f8779f14-8683-47e6-ae9c-ec493b29dea1','candidate',NULL,1,'2026-11-24T11:29:00.630Z');
+INSERT INTO "users" ("id","username","full_name","password_hash","salt","role_id","department_id","active","created_at") VALUES ('candidate-4','candidate4','Иван Морозов','1b03994f71aaa2c744a370a480271a06f75e58766c99116c58b202d1e9b4d521','58b4b59a-f3e0-4509-b0d9-834a24f7e9ad','candidate',NULL,1,'2026-11-24T16:41:17.255Z');
 
-INSERT INTO "profiles" ("user_id","education","experience","about","consent","updated_at") VALUES ('candidate','Высшее образование · демонстрационный пример','Опыт работы с обращениями и документами','Карточка для проверки функций сервиса. Сведения вымышлены.',1,'2026-11-24T11:29:00.630Z');
+INSERT INTO "profiles" ("user_id","education","experience","about","consent","updated_at") VALUES ('candidate','Высшее образование · демонстрационный пример','Опыт работы с обращениями и документами','Карточка для проверки функций сервиса. Сведения вымышлены.',1,'2026-11-24T16:41:17.255Z');
 
-INSERT INTO "profiles" ("user_id","education","experience","about","consent","updated_at") VALUES ('candidate-2','Высшее образование · демонстрационный пример','Опыт работы с обращениями и документами','Карточка для проверки функций сервиса. Сведения вымышлены.',1,'2026-11-24T11:29:00.630Z');
+INSERT INTO "profiles" ("user_id","education","experience","about","consent","updated_at") VALUES ('candidate-2','Высшее образование · демонстрационный пример','Опыт работы с обращениями и документами','Карточка для проверки функций сервиса. Сведения вымышлены.',1,'2026-11-24T16:41:17.255Z');
 
-INSERT INTO "profiles" ("user_id","education","experience","about","consent","updated_at") VALUES ('candidate-3','Высшее образование · демонстрационный пример','Опыт работы с обращениями и документами','Карточка для проверки функций сервиса. Сведения вымышлены.',1,'2026-11-24T11:29:00.630Z');
+INSERT INTO "profiles" ("user_id","education","experience","about","consent","updated_at") VALUES ('candidate-3','Высшее образование · демонстрационный пример','Опыт работы с обращениями и документами','Карточка для проверки функций сервиса. Сведения вымышлены.',1,'2026-11-24T16:41:17.255Z');
 
-INSERT INTO "profiles" ("user_id","education","experience","about","consent","updated_at") VALUES ('candidate-4','Высшее образование · демонстрационный пример','Опыт работы с обращениями и документами','Карточка для проверки функций сервиса. Сведения вымышлены.',1,'2026-11-24T11:29:00.630Z');
+INSERT INTO "profiles" ("user_id","education","experience","about","consent","updated_at") VALUES ('candidate-4','Высшее образование · демонстрационный пример','Опыт работы с обращениями и документами','Карточка для проверки функций сервиса. Сведения вымышлены.',1,'2026-11-24T16:41:17.255Z');
 
-INSERT INTO "requests" ("id","department_id","title","justification","status","owner_id","version","created_at") VALUES ('req-student-manager','student-office','Менеджер студенческого офиса','Заявка на подбор для проверки маршрута согласования.','approved','hr',1,'2026-11-24T11:29:00.630Z');
+INSERT INTO "requests" ("id","department_id","title","justification","status","owner_id","version","created_at") VALUES ('req-student-manager','student-office','Менеджер студенческого офиса','Заявка на подбор для проверки маршрута согласования.','approved','hr',1,'2026-11-24T16:41:17.255Z');
 
-INSERT INTO "requests" ("id","department_id","title","justification","status","owner_id","version","created_at") VALUES ('req-support-specialist','it','Специалист поддержки информационных систем','Заявка на подбор для проверки маршрута согласования.','approved','hr',1,'2026-11-24T11:29:00.630Z');
+INSERT INTO "requests" ("id","department_id","title","justification","status","owner_id","version","created_at") VALUES ('req-support-specialist','it','Специалист поддержки информационных систем','Заявка на подбор для проверки маршрута согласования.','approved','hr',1,'2026-11-24T16:41:17.255Z');
 
-INSERT INTO "requests" ("id","department_id","title","justification","status","owner_id","version","created_at") VALUES ('req-records-specialist','office','Специалист по документообороту','Заявка на подбор для проверки маршрута согласования.','approved','hr',1,'2026-11-24T11:29:00.630Z');
+INSERT INTO "requests" ("id","department_id","title","justification","status","owner_id","version","created_at") VALUES ('req-records-specialist','office','Специалист по документообороту','Заявка на подбор для проверки маршрута согласования.','approved','hr',1,'2026-11-24T16:41:17.255Z');
 
-INSERT INTO "requests" ("id","department_id","title","justification","status","owner_id","version","created_at") VALUES ('req-hr-coordinator','personnel','Координатор адаптации персонала','Заявка на подбор для проверки маршрута согласования.','approved','hr',1,'2026-11-24T11:29:00.630Z');
+INSERT INTO "requests" ("id","department_id","title","justification","status","owner_id","version","created_at") VALUES ('req-hr-coordinator','personnel','Координатор адаптации персонала','Заявка на подбор для проверки маршрута согласования.','approved','hr',1,'2026-11-24T16:41:17.255Z');
 
-INSERT INTO "vacancies" ("id","request_id","department_id","title","description","requirements","schedule","status","version","created_at") VALUES ('student-manager','req-student-manager','student-office','Менеджер студенческого офиса','Приём обращений обучающихся, проверка комплектности заявлений и подготовка справок. Вакансия для демонстрации процесса.','Работа с офисными приложениями, грамотная речь, внимательность к документам.','График согласуется при собеседовании','published',1,'2026-11-24T11:29:00.630Z');
+INSERT INTO "vacancies" ("id","request_id","department_id","title","description","requirements","schedule","status","version","created_at") VALUES ('student-manager','req-student-manager','student-office','Менеджер студенческого офиса','Приём обращений обучающихся, проверка комплектности заявлений и подготовка справок. Вакансия для демонстрации процесса.','Работа с офисными приложениями, грамотная речь, внимательность к документам.','График согласуется при собеседовании','published',1,'2026-11-24T16:41:17.255Z');
 
-INSERT INTO "vacancies" ("id","request_id","department_id","title","description","requirements","schedule","status","version","created_at") VALUES ('support-specialist','req-support-specialist','it','Специалист поддержки информационных систем','Регистрация заявок пользователей, первичная диагностика и передача сложных обращений профильным специалистам. Пример.','Понимание устройства веб-приложений, умение описывать неисправности и работать по инструкции.','График согласуется при собеседовании','published',1,'2026-11-24T11:29:00.630Z');
+INSERT INTO "vacancies" ("id","request_id","department_id","title","description","requirements","schedule","status","version","created_at") VALUES ('support-specialist','req-support-specialist','it','Специалист поддержки информационных систем','Регистрация заявок пользователей, первичная диагностика и передача сложных обращений профильным специалистам. Пример.','Понимание устройства веб-приложений, умение описывать неисправности и работать по инструкции.','График согласуется при собеседовании','published',1,'2026-11-24T16:41:17.255Z');
 
-INSERT INTO "vacancies" ("id","request_id","department_id","title","description","requirements","schedule","status","version","created_at") VALUES ('records-specialist','req-records-specialist','office','Специалист по документообороту','Регистрация входящих документов, контроль реквизитов и соблюдения установленных сроков. Пример.','Навыки деловой переписки, систематизации документов и работы с электронными реестрами.','График согласуется при собеседовании','published',1,'2026-11-24T11:29:00.630Z');
+INSERT INTO "vacancies" ("id","request_id","department_id","title","description","requirements","schedule","status","version","created_at") VALUES ('records-specialist','req-records-specialist','office','Специалист по документообороту','Регистрация входящих документов, контроль реквизитов и соблюдения установленных сроков. Пример.','Навыки деловой переписки, систематизации документов и работы с электронными реестрами.','График согласуется при собеседовании','published',1,'2026-11-24T16:41:17.255Z');
 
-INSERT INTO "vacancies" ("id","request_id","department_id","title","description","requirements","schedule","status","version","created_at") VALUES ('hr-coordinator','req-hr-coordinator','personnel','Координатор адаптации персонала','Сопровождение планов адаптации, организация встреч с наставниками и сбор подтверждений выполнения задач. Пример.','Организация встреч, работа с таблицами, внимание к срокам и защите служебной информации.','График согласуется при собеседовании','published',1,'2026-11-24T11:29:00.630Z');
+INSERT INTO "vacancies" ("id","request_id","department_id","title","description","requirements","schedule","status","version","created_at") VALUES ('hr-coordinator','req-hr-coordinator','personnel','Координатор адаптации персонала','Сопровождение планов адаптации, организация встреч с наставниками и сбор подтверждений выполнения задач. Пример.','Организация встреч, работа с таблицами, внимание к срокам и защите служебной информации.','График согласуется при собеседовании','published',1,'2026-11-24T16:41:17.255Z');
 
-INSERT INTO "applications" ("id","vacancy_id","candidate_id","cover_letter","status","decision_note","version","created_at","updated_at") VALUES ('app-1','student-manager','candidate','Отклик. Хочу применить навыки работы с обращениями и документами.','interview','',1,'2026-11-18T09:00:00.000Z','2026-11-24T11:29:00.630Z');
+INSERT INTO "applications" ("id","vacancy_id","candidate_id","cover_letter","status","decision_note","version","created_at","updated_at") VALUES ('app-1','student-manager','candidate','Отклик. Хочу применить навыки работы с обращениями и документами.','interview','',1,'2026-11-18T09:00:00.000Z','2026-11-24T16:41:17.255Z');
 
-INSERT INTO "applications" ("id","vacancy_id","candidate_id","cover_letter","status","decision_note","version","created_at","updated_at") VALUES ('app-2','support-specialist','candidate-2','Отклик. Хочу применить навыки работы с обращениями и документами.','review','',1,'2026-11-18T09:00:00.000Z','2026-11-24T11:29:00.630Z');
+INSERT INTO "applications" ("id","vacancy_id","candidate_id","cover_letter","status","decision_note","version","created_at","updated_at") VALUES ('app-2','support-specialist','candidate-2','Отклик. Хочу применить навыки работы с обращениями и документами.','review','',1,'2026-11-18T09:00:00.000Z','2026-11-24T16:41:17.255Z');
 
-INSERT INTO "applications" ("id","vacancy_id","candidate_id","cover_letter","status","decision_note","version","created_at","updated_at") VALUES ('app-3','records-specialist','candidate-3','Отклик. Хочу применить навыки работы с обращениями и документами.','hired','Решение после проверки всех компетенций.',1,'2026-11-18T09:00:00.000Z','2026-11-24T11:29:00.630Z');
+INSERT INTO "applications" ("id","vacancy_id","candidate_id","cover_letter","status","decision_note","version","created_at","updated_at") VALUES ('app-3','records-specialist','candidate-3','Отклик. Хочу применить навыки работы с обращениями и документами.','hired','Решение после проверки всех компетенций.',1,'2026-11-18T09:00:00.000Z','2026-11-24T16:41:17.255Z');
 
-INSERT INTO "applications" ("id","vacancy_id","candidate_id","cover_letter","status","decision_note","version","created_at","updated_at") VALUES ('app-4','hr-coordinator','candidate-4','Отклик. Хочу применить навыки работы с обращениями и документами.','new','',1,'2026-11-18T09:00:00.000Z','2026-11-24T11:29:00.630Z');
+INSERT INTO "applications" ("id","vacancy_id","candidate_id","cover_letter","status","decision_note","version","created_at","updated_at") VALUES ('app-4','hr-coordinator','candidate-4','Отклик. Хочу применить навыки работы с обращениями и документами.','new','',1,'2026-11-18T09:00:00.000Z','2026-11-24T16:41:17.255Z');
 
-INSERT INTO "applications" ("id","vacancy_id","candidate_id","cover_letter","status","decision_note","version","created_at","updated_at") VALUES ('app-5','hr-coordinator','candidate-2','Отклик. Хочу применить навыки работы с обращениями и документами.','new','',1,'2026-11-18T09:00:00.000Z','2026-11-24T11:29:00.630Z');
+INSERT INTO "applications" ("id","vacancy_id","candidate_id","cover_letter","status","decision_note","version","created_at","updated_at") VALUES ('app-5','hr-coordinator','candidate-2','Отклик. Хочу применить навыки работы с обращениями и документами.','new','',1,'2026-11-18T09:00:00.000Z','2026-11-24T16:41:17.255Z');
 
-INSERT INTO "applications" ("id","vacancy_id","candidate_id","cover_letter","status","decision_note","version","created_at","updated_at") VALUES ('app-6','student-manager','candidate-4','Отклик. Хочу применить навыки работы с обращениями и документами.','review','',1,'2026-11-18T09:00:00.000Z','2026-11-24T11:29:00.630Z');
+INSERT INTO "applications" ("id","vacancy_id","candidate_id","cover_letter","status","decision_note","version","created_at","updated_at") VALUES ('app-6','student-manager','candidate-4','Отклик. Хочу применить навыки работы с обращениями и документами.','review','',1,'2026-11-18T09:00:00.000Z','2026-11-24T16:41:17.255Z');
 
 INSERT INTO "competencies" ("id","title","description","weight") VALUES ('communication','Деловое общение','Понятное и корректное объяснение порядка действий заявителю.',3);
 
@@ -312,31 +312,31 @@ INSERT INTO "vacancy_competencies" ("vacancy_id","competency_id","target_level")
 
 INSERT INTO "vacancy_competencies" ("vacancy_id","competency_id","target_level") VALUES ('hr-coordinator','privacy',3);
 
-INSERT INTO "assessments" ("id","application_id","competency_id","assessor_id","score","evidence","created_at") VALUES ('assessment_f20f0fa6-dfd7-4f04-8671-77f06e883977','app-1','communication','hr',3,'Демонстрационный результат ситуационного задания. Оценка внесена специалистом.','2026-11-24T11:29:00.630Z');
+INSERT INTO "assessments" ("id","application_id","competency_id","assessor_id","score","evidence","created_at") VALUES ('assessment_ce6a3a7a-df3c-4282-89f6-bf5ea716f5d4','app-1','communication','hr',3,'Демонстрационный результат ситуационного задания. Оценка внесена специалистом.','2026-11-24T16:41:17.255Z');
 
-INSERT INTO "assessments" ("id","application_id","competency_id","assessor_id","score","evidence","created_at") VALUES ('assessment_fc78c0ae-5676-49f3-8105-de2d9d825a0d','app-1','documents','hr',4,'Демонстрационный результат ситуационного задания. Оценка внесена специалистом.','2026-11-24T11:29:00.630Z');
+INSERT INTO "assessments" ("id","application_id","competency_id","assessor_id","score","evidence","created_at") VALUES ('assessment_8edc858f-1ce5-4ab6-8126-6097d92b2a09','app-1','documents','hr',4,'Демонстрационный результат ситуационного задания. Оценка внесена специалистом.','2026-11-24T16:41:17.255Z');
 
-INSERT INTO "assessments" ("id","application_id","competency_id","assessor_id","score","evidence","created_at") VALUES ('assessment_b37e6acf-a110-4c20-9dac-f097d306dad6','app-1','digital','hr',3,'Демонстрационный результат ситуационного задания. Оценка внесена специалистом.','2026-11-24T11:29:00.630Z');
+INSERT INTO "assessments" ("id","application_id","competency_id","assessor_id","score","evidence","created_at") VALUES ('assessment_77e7f847-7289-423a-ba8f-f369f1016875','app-1','digital','hr',3,'Демонстрационный результат ситуационного задания. Оценка внесена специалистом.','2026-11-24T16:41:17.255Z');
 
-INSERT INTO "assessments" ("id","application_id","competency_id","assessor_id","score","evidence","created_at") VALUES ('assessment_1a83e54c-c805-40e1-9978-852c8a38a4a6','app-1','planning','hr',4,'Демонстрационный результат ситуационного задания. Оценка внесена специалистом.','2026-11-24T11:29:00.630Z');
+INSERT INTO "assessments" ("id","application_id","competency_id","assessor_id","score","evidence","created_at") VALUES ('assessment_daf3a69c-4b04-437c-95e4-c84356afc9b5','app-1','planning','hr',4,'Демонстрационный результат ситуационного задания. Оценка внесена специалистом.','2026-11-24T16:41:17.255Z');
 
-INSERT INTO "assessments" ("id","application_id","competency_id","assessor_id","score","evidence","created_at") VALUES ('assessment_ec31fdaa-4fe0-413a-84f8-6c8fbfffe42d','app-1','privacy','hr',3,'Демонстрационный результат ситуационного задания. Оценка внесена специалистом.','2026-11-24T11:29:00.630Z');
+INSERT INTO "assessments" ("id","application_id","competency_id","assessor_id","score","evidence","created_at") VALUES ('assessment_ca880b97-d2de-4f64-b965-0c32a2b7666e','app-1','privacy','hr',3,'Демонстрационный результат ситуационного задания. Оценка внесена специалистом.','2026-11-24T16:41:17.255Z');
 
-INSERT INTO "assessments" ("id","application_id","competency_id","assessor_id","score","evidence","created_at") VALUES ('assessment_b440b9f7-39be-4e89-8b19-2efccd47e854','app-3','communication','hr',3,'Демонстрационный результат ситуационного задания. Оценка внесена специалистом.','2026-11-24T11:29:00.630Z');
+INSERT INTO "assessments" ("id","application_id","competency_id","assessor_id","score","evidence","created_at") VALUES ('assessment_ecb93e15-24a3-4c99-a11b-ade9ab7d85cb','app-3','communication','hr',3,'Демонстрационный результат ситуационного задания. Оценка внесена специалистом.','2026-11-24T16:41:17.255Z');
 
-INSERT INTO "assessments" ("id","application_id","competency_id","assessor_id","score","evidence","created_at") VALUES ('assessment_67306ea5-0cf5-4d39-af6f-13886378595a','app-3','documents','hr',4,'Демонстрационный результат ситуационного задания. Оценка внесена специалистом.','2026-11-24T11:29:00.630Z');
+INSERT INTO "assessments" ("id","application_id","competency_id","assessor_id","score","evidence","created_at") VALUES ('assessment_cfea1f99-9989-4fb4-b9df-0ac98a3f33fe','app-3','documents','hr',4,'Демонстрационный результат ситуационного задания. Оценка внесена специалистом.','2026-11-24T16:41:17.255Z');
 
-INSERT INTO "assessments" ("id","application_id","competency_id","assessor_id","score","evidence","created_at") VALUES ('assessment_a03c8ff9-f863-4380-a3e1-6a4dea5ec01c','app-3','digital','hr',3,'Демонстрационный результат ситуационного задания. Оценка внесена специалистом.','2026-11-24T11:29:00.630Z');
+INSERT INTO "assessments" ("id","application_id","competency_id","assessor_id","score","evidence","created_at") VALUES ('assessment_48d8226d-62eb-45eb-b2b0-3353ad52ce44','app-3','digital','hr',3,'Демонстрационный результат ситуационного задания. Оценка внесена специалистом.','2026-11-24T16:41:17.255Z');
 
-INSERT INTO "assessments" ("id","application_id","competency_id","assessor_id","score","evidence","created_at") VALUES ('assessment_4bb0b208-7001-4786-97f8-10e6b914b474','app-3','planning','hr',4,'Демонстрационный результат ситуационного задания. Оценка внесена специалистом.','2026-11-24T11:29:00.630Z');
+INSERT INTO "assessments" ("id","application_id","competency_id","assessor_id","score","evidence","created_at") VALUES ('assessment_8f3605e7-2220-4b7b-960a-5a1481b55284','app-3','planning','hr',4,'Демонстрационный результат ситуационного задания. Оценка внесена специалистом.','2026-11-24T16:41:17.255Z');
 
-INSERT INTO "assessments" ("id","application_id","competency_id","assessor_id","score","evidence","created_at") VALUES ('assessment_8a009672-0a2b-4858-be57-a72df4b111db','app-3','privacy','hr',3,'Демонстрационный результат ситуационного задания. Оценка внесена специалистом.','2026-11-24T11:29:00.630Z');
+INSERT INTO "assessments" ("id","application_id","competency_id","assessor_id","score","evidence","created_at") VALUES ('assessment_17a3d6b7-ee49-4b3d-a954-ce5a5c0830fe','app-3','privacy','hr',3,'Демонстрационный результат ситуационного задания. Оценка внесена специалистом.','2026-11-24T16:41:17.255Z');
 
-INSERT INTO "interviews" ("id","application_id","interviewer_id","scheduled_at","format","result","status","created_at") VALUES ('interview-1','app-1','hr','2026-11-27T10:00','Видеовстреча · пример','','planned','2026-11-24T11:29:00.630Z');
+INSERT INTO "interviews" ("id","application_id","interviewer_id","scheduled_at","format","result","status","created_at") VALUES ('interview-1','app-1','hr','2026-11-27T10:00','Видеовстреча · пример','','planned','2026-11-24T16:41:17.255Z');
 
-INSERT INTO "adaptation_plans" ("id","application_id","employee_id","mentor_id","title","start_date","end_date","status","created_at") VALUES ('plan-1','app-3','candidate-3','hr','Первый месяц специалиста по документообороту','2026-11-23','2026-12-23','active','2026-11-24T11:29:00.630Z');
+INSERT INTO "adaptation_plans" ("id","application_id","employee_id","mentor_id","title","start_date","end_date","status","created_at") VALUES ('plan-1','app-3','candidate-3','hr','Первый месяц специалиста по документообороту','2026-11-23','2026-12-23','active','2026-11-24T16:41:17.255Z');
 
-INSERT INTO "adaptation_tasks" ("id","plan_id","title","due_date","status","evidence","completed_at") VALUES ('task-1','plan-1','Ознакомиться с правилами внутреннего распорядка','2026-11-25','done','Ознакомление подтверждено в сценарии.','2026-11-24T11:29:00.630Z');
+INSERT INTO "adaptation_tasks" ("id","plan_id","title","due_date","status","evidence","completed_at") VALUES ('task-1','plan-1','Ознакомиться с правилами внутреннего распорядка','2026-11-25','done','Ознакомление подтверждено в сценарии.','2026-11-24T16:41:17.255Z');
 
 INSERT INTO "adaptation_tasks" ("id","plan_id","title","due_date","status","evidence","completed_at") VALUES ('task-2','plan-1','Получить доступ к информационным ресурсам','2026-11-26','todo','',NULL);
 
@@ -344,9 +344,9 @@ INSERT INTO "adaptation_tasks" ("id","plan_id","title","due_date","status","evid
 
 INSERT INTO "adaptation_tasks" ("id","plan_id","title","due_date","status","evidence","completed_at") VALUES ('task-4','plan-1','Выполнить задание и получить обратную связь','2026-11-28','todo','',NULL);
 
-INSERT INTO "notifications" ("id","user_id","title","body","read_at","created_at") VALUES ('notice-welcome','candidate','Приглашение на собеседование','Дата и формат доступны в разделе «Мои собеседования».',NULL,'2026-11-24T11:29:00.630Z');
+INSERT INTO "notifications" ("id","user_id","title","body","read_at","created_at") VALUES ('notice-welcome','candidate','Приглашение на собеседование','Дата и формат доступны в разделе «Мои собеседования».',NULL,'2026-11-24T16:41:17.255Z');
 
-INSERT INTO "audit_events" ("id","actor_id","action","entity_type","entity_id","details","created_at") VALUES ('event_ff602cb0-05c5-4082-af27-dcc76f432c91','admin','Создание набора','demo','initial','Все персональные записи вымышлены.','2026-11-24T11:29:00.630Z');
+INSERT INTO "audit_events" ("id","actor_id","action","entity_type","entity_id","details","created_at") VALUES ('event_66b2f01d-4e65-4755-8de5-7339caa347b1','admin','Создание набора','demo','initial','Все персональные записи вымышлены.','2026-11-24T16:41:17.255Z');
 
-INSERT INTO "settings" ("key","value") VALUES ('demo_initialized','2026-11-24T11:29:00.630Z');
+INSERT INTO "settings" ("key","value") VALUES ('demo_initialized','2026-11-24T16:41:17.255Z');
 COMMIT;
