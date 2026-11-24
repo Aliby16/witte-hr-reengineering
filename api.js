@@ -415,13 +415,13 @@ export async function handleApi(request, env) {
     must(task, 'Задание не найдено.', 404);
     const plan = await planFor(env, task.plan_id, user);
     must(plan.status === 'active', 'План уже завершён.');
+    must(task.status==='todo','Задание уже выполнено. Для уточнения используйте исправление подтверждения.',409);
     const body = await parseBody(request);
     const evidence = safeText(body.evidence, 2000);
     must(evidence.length >= 10, 'Опишите подтверждение выполнения задания.');
-    await env.DB.batch([
-      statement(env, "UPDATE adaptation_tasks SET status='done',evidence=?,completed_at=? WHERE id=?", [evidence,now(),id]),
-      auditStatement(env, user, 'Выполнение задания', 'task', id, evidence)
-    ]);
+    const changed=await dbRun(env,"UPDATE adaptation_tasks SET status='done',evidence=?,completed_at=? WHERE id=? AND status='todo'",[evidence,now(),id]);
+    must(changed.meta?.changes===1,'Задание уже выполнено.',409);
+    await auditStatement(env,user,'Выполнение задания','task',id,evidence).run();
     return json({ ok: true });
   }
   if (method === 'GET' && path.startsWith('/api/files/')) {

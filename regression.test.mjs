@@ -49,6 +49,12 @@ async function fixture(t){
   return {env,DB,call,auth};
 }
 
+test('повторное выполнение не перезаписывает подтверждение задания',async t=>{
+  const {call,DB}=await fixture(t);const before=await DB.prepare('SELECT evidence FROM adaptation_tasks WHERE id=?').bind('task-1').first();
+  assert.equal((await call('/api/tasks/task-1','POST',{evidence:'Новое подтверждение без отдельного исправления'},'hr')).status,409);
+  assert.equal((await DB.prepare('SELECT evidence FROM adaptation_tasks WHERE id=?').bind('task-1').first()).evidence,before.evidence);
+});
+
 test('итоговый отказ отменяет оставшиеся запланированные встречи',async t=>{
   const {call,DB}=await fixture(t);
   assert.equal((await call('/api/applications/app-1','POST',{version:1,status:'rejected',decision_note:'Квалификация не соответствует требованиям вакансии.'},'hr')).status,200);
