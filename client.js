@@ -72,45 +72,45 @@ export function clientBootstrap() {
     $('#private-nav').innerHTML=`<hr class="nav-divider"><nav aria-label="Личный кабинет"><p class="nav-label">${esc(roleNames[user.role_id])}</p>${pages.map(p=>`<a class="nav-link${location.pathname===`/app/${p}`?' active':''}" href="/app/${p}">${esc(p==='applications'&&user.role_id==='candidate'?'Мои отклики':p==='plans'&&user.role_id==='candidate'?'Моя адаптация':privateLabels[p])}</a>`).join('')}${button('Выйти','logout','',true)}</nav>`;
   }
   async function showLogin() {
-    root.innerHTML=heading('Вход в личный кабинет','Выберите учебную роль или введите данные демонстрационной учётной записи.')+
-      `<div class="login-layout"><div>${form('login',input('Логин','username','text','',true,'autocomplete="username"')+input('Пароль','password','password','',true,'autocomplete="current-password"'),'Войти')}</div><section class="card"><h2>Проверить проект</h2><p class="small">Учебные учётные записи используют пароль <strong>WitteDemo2026!</strong>. Набор создаётся один раз и сохраняет последующие изменения.</p>${[['candidate','Соискатель','Собственные отклики и встречи'],['hr','Служба персонала','Подбор, оценка и адаптация'],['admin','Администратор','Пользователи и журнал событий']].map(([role,title,text])=>`<div class="demo-option"><div><h3>${title}</h3><p class="small muted">${text}</p></div>${button('Войти','demo-login',role,true)}</div>`).join('')}</section></div>`;
+    root.innerHTML=heading('Вход в личный кабинет','Выберите роль или введите данные демонстрационной учётной записи.')+
+      `<div class="login-layout"><div>${form('login',input('Логин','username','text','',true,'autocomplete="username"')+input('Пароль','password','password','',true,'autocomplete="current-password"'),'Войти')}</div><section class="card"><h2>Проверить проект</h2><p class="small">Учётные записи используют пароль <strong>WitteDemo2026!</strong>. Набор создаётся один раз и сохраняет последующие изменения.</p>${[['candidate','Соискатель','Собственные отклики и встречи'],['hr','Служба персонала','Подбор, оценка и адаптация'],['admin','Администратор','Пользователи и журнал событий']].map(([role,title,text])=>`<div class="demo-option"><div><h3>${title}</h3><p class="small muted">${text}</p></div>${button('Войти','demo-login',role,true)}</div>`).join('')}</section></div>`;
   }
   async function showDashboard() {
     const data=await api('/api/dashboard');
-    root.innerHTML=heading('Обзор кадрового процесса',`${roleNames[user.role_id]} · учебный набор данных`)+
+    root.innerHTML=heading('Обзор кадрового процесса',`${roleNames[user.role_id]} · набор данных`)+
       `<div class="grid"><article class="card"><span class="small">${user.role_id==='candidate'?'Мои отклики':'Отклики в работе'}</span><span class="number">${data.applications}</span><a href="/app/applications">Открыть реестр</a></article><article class="card"><span class="small">Планы адаптации</span><span class="number">${data.plans}</span><a href="/app/plans">Посмотреть планы</a></article><article class="card"><span class="small">Просроченные задания</span><span class="number">${data.overdue}</span><span class="small">Контроль на текущую дату</span></article></div>`+
-      `<div class="section-heading"><h2>Этапы рассмотрения</h2><span class="small muted">Фактическое состояние учебных записей</span></div><section class="card">${Object.entries(statusNames).filter(([key])=>['new','review','interview','offer','hired','rejected'].includes(key)).map(([key,label])=>`<div class="bar-row"><span>${label}</span><progress max="${Math.max(data.applications,1)}" value="${data.statuses[key]||0}" aria-label="${label}"></progress><strong>${data.statuses[key]||0}</strong></div>`).join('')}</section>`+
+      `<div class="section-heading"><h2>Этапы рассмотрения</h2><span class="small muted">Фактическое состояние записей</span></div><section class="card">${Object.entries(statusNames).filter(([key])=>['new','review','interview','offer','hired','rejected'].includes(key)).map(([key,label])=>`<div class="bar-row"><span>${label}</span><progress max="${Math.max(data.applications,1)}" value="${data.statuses[key]||0}" aria-label="${label}"></progress><strong>${data.statuses[key]||0}</strong></div>`).join('')}</section>`+
       `<div class="section-heading"><h2>Последние отклики</h2><a href="/app/applications">Все отклики</a></div>`+
       table(['Кандидат','Вакансия','Этап'],data.recent.map(a=>[esc(a.candidate_name),esc(a.vacancy_title),pill(a.status)]));
   }
   async function showPublicVacancies() {
     const {rows}=await api('/api/list/vacancies');
     currentRows=rows;
-    root.innerHTML=heading('Учебные вакансии','Примеры позиций для проверки кадрового процесса. Это не действующие объявления о трудоустройстве.')+
+    root.innerHTML=heading('Вакансии','Подразделения, обязанности, требования и этапы отбора.')+
       `<div class="filters"><label>Поиск вакансии<input id="vacancy-search" type="search" placeholder="Должность или подразделение"></label></div><div id="vacancy-cards" class="grid two"></div>`;
     drawVacancies(rows);
   }
   function drawVacancies(rows) {
-    $('#vacancy-cards').innerHTML=rows.length?rows.map(v=>`<article class="card"><span class="pill">Учебная вакансия</span><h2>${esc(v.title)}</h2><p class="small muted">${esc(v.department_title)}</p><p>${esc(v.description)}</p><h3>Требования</h3><p>${esc(v.requirements)}</p><p class="small">${esc(v.schedule)}</p>${button('Откликнуться','apply',v.id)}</article>`).join(''):empty('По этому запросу вакансий нет.');
+    $('#vacancy-cards').innerHTML=rows.length?rows.map(v=>`<article class="card"><span class="pill">Вакансия</span><h2>${esc(v.title)}</h2><p class="small muted">${esc(v.department_title)}</p><p>${esc(v.description)}</p><h3>Требования</h3><p>${esc(v.requirements)}</p><p class="small">${esc(v.schedule)}</p>${button('Откликнуться','apply',v.id)}</article>`).join(''):empty('По этому запросу вакансий нет.');
   }
   async function showProfile() {
     const {profile}=await api('/api/profile');
-    root.innerHTML=heading('Мой профиль','Используйте вымышленные сведения для проверки приложения.')+
+    root.innerHTML=heading('Мой профиль','Укажите образование, профессиональный опыт и сведения о себе.')+
       form('profile',area('Образование','education',profile.education||'')+area('Профессиональный опыт','experience',profile.experience||'')+area('О себе','about',profile.about||'',false)+
-        `<label class="checkbox-label"><input type="checkbox" name="consent" ${profile.consent?'checked':''}>Подтверждаю использование учебных данных для демонстрации отклика</label>`,'Сохранить профиль');
+        `<label class="checkbox-label"><input type="checkbox" name="consent" ${profile.consent?'checked':''}>Подтверждаю использование данных для демонстрации отклика</label>`,'Сохранить профиль');
   }
   async function showList(page) {
     currentPage=page;
     const type=page==='reports'?'applications':page;
     const {rows}=await api(`/api/list/${type}`);
     currentRows=rows;
-    const actions={vacancies:['new-vacancy','Создать вакансию'],requests:['new-request','Создать заявку'],plans:['new-plan','Создать план'],departments:['new-department','Добавить подразделение'],users:['new-user','Добавить учебную запись']};
+    const actions={vacancies:['new-vacancy','Создать вакансию'],requests:['new-request','Создать заявку'],plans:['new-plan','Создать план'],departments:['new-department','Добавить подразделение'],users:['new-user','Добавить запись']};
     const allow=user.role_id!=='candidate';
     const [action,label]=allow?(actions[page]||[]):[];
     const title=page==='applications'&&user.role_id==='candidate'?'Мои отклики':privateLabels[page];
     root.innerHTML=heading(title)+
-      (page==='reports'?'<p class="lead">Реестр сформирован из текущих учебных записей. Выгрузка сохраняет состояние на момент запроса.</p><div class="actions"><a class="button" href="/api/export/applications.xlsx">Скачать реестр XLSX</a></div>':'')+
-      (page==='files'?'<p class="lead">Можно загрузить учебный PDF до 2 МБ. Доступ к файлу проверяется по владельцу записи.</p>'+form('upload','<label>PDF-файл<input type="file" name="file" accept="application/pdf,.pdf" required></label>','Загрузить документ'):'')+
+      (page==='reports'?'<p class="lead">Реестр сформирован из текущих записей. Выгрузка сохраняет состояние на момент запроса.</p><div class="actions"><a class="button" href="/api/export/applications.xlsx">Скачать реестр XLSX</a></div>':'')+
+      (page==='files'?'<p class="lead">Можно загрузить  PDF до 2 МБ. Доступ к файлу проверяется по владельцу записи.</p>'+form('upload','<label>PDF-файл<input type="file" name="file" accept="application/pdf,.pdf" required></label>','Загрузить документ'):'')+
       toolbar(action,label);
     drawRecords(rows);
   }
@@ -151,7 +151,7 @@ export function clientBootstrap() {
       headers=['Подразделение','Назначение'];
       cells=rows.map(d=>[esc(d.title),esc(d.description)]);
     } else if(currentPage==='roles') {
-      headers=['Роль','Назначение','Учебных записей'];
+      headers=['Роль','Назначение','Записей'];
       const purpose={admin:'Пользователи, подразделения, роли, журнал и настройки',hr:'Подбор, оценка, встречи, адаптация и отчёты',candidate:'Собственный профиль, отклики, встречи, план и документы'};
       cells=rows.map(r=>[esc(r.title),esc(purpose[r.id]||''),esc(r.user_count)]);
     } else if(currentPage==='audit') {
@@ -173,7 +173,7 @@ export function clientBootstrap() {
       body+=`<h3>Оценка компетенций</h3>`+table(['Компетенция','Оценка','Основание'],assessments.map(s=>[esc(s.title),s.score??'Не заполнена',esc(s.evidence||'')]))+
         form('assessment',`<input type="hidden" name="application_id" value="${esc(id)}">`+select('Компетенция','competency_id',assessments.map(s=>[s.id,s.title]))+input('Оценка от 0 до 5','score','number',3,true,'min="0" max="5" step="1"')+area('Наблюдаемый результат задания','evidence'),'Сохранить оценку');
       if(transitions[a.status]?.length) body+=`<h3>Изменить этап</h3>`+form('application-status',`<input type="hidden" name="version" value="${a.version}">`+select('Следующий этап','status',transitions[a.status].map(s=>[s,statusNames[s]]))+area('Обоснование решения','decision_note','',false),'Сохранить решение',id);
-      if(['review','interview'].includes(a.status)) body+=`<h3>Назначить собеседование</h3>`+form('interview',`<input type="hidden" name="application_id" value="${esc(id)}">`+input('Дата и время','scheduled_at','datetime-local')+input('Формат и место','format','text','Видеовстреча · учебный пример'),'Назначить встречу');
+      if(['review','interview'].includes(a.status)) body+=`<h3>Назначить собеседование</h3>`+form('interview',`<input type="hidden" name="application_id" value="${esc(id)}">`+input('Дата и время','scheduled_at','datetime-local')+input('Формат и место','format','text','Видеовстреча · пример'),'Назначить встречу');
     }
     modal('Карточка отклика',body);
   }
@@ -189,7 +189,7 @@ export function clientBootstrap() {
     const requests=(await api('/api/list/requests')).rows.filter(r=>r.status==='approved');
     modal('Новая вакансия',form('vacancy',input('Название должности','title')+
       select('Подразделение','department_id',departments.map(d=>[d.id,d.title]))+
-      select('Согласованная заявка','request_id',[['','Учебная вакансия без связанной заявки'],...requests.map(r=>[r.id,r.title])])+
+      select('Согласованная заявка','request_id',[['','Вакансия без связанной заявки'],...requests.map(r=>[r.id,r.title])])+
       area('Обязанности','description')+area('Требования','requirements')+input('График','schedule','text','Полная занятость')+
       select('Публикация','status',[['published','Опубликовать'],['draft','Сохранить черновик']]),'Создать вакансию'));
     $('select[name=request_id]').required=false;
@@ -206,14 +206,14 @@ export function clientBootstrap() {
     modal('Новый план адаптации',form('plan',select('Принятый сотрудник','application_id',apps.map(a=>[a.id,`${a.candidate_name} · ${a.vacancy_title}`]))+input('Название плана','title','text','Первые 30 дней нового сотрудника')+input('Начало','start_date','date',today)+input('Окончание','end_date','date',end),'Создать план'));
   }
   function showContact() {
-    root.innerHTML=heading('Обратная связь по проекту','Сообщение сохраняется в учебном приложении и не отправляется в университет.')+
-      form('feedback',input('Имя для учебного примера','name')+input('Условный контакт','contact','text','example@test.invalid')+input('Тема','topic')+area('Сообщение','message')+
-        '<label class="checkbox-label"><input type="checkbox" name="consent" required>Использую вымышленные сведения и согласен сохранить сообщение в учебном проекте</label>','Отправить сообщение');
+    root.innerHTML=heading('Обратная связь по проекту','Отправьте вопрос или предложение по работе сервиса.')+
+      form('feedback',input('Имя','name')+input('Условный контакт','contact','text','example@test.invalid')+input('Тема','topic')+area('Сообщение','message')+
+        '<label class="checkbox-label"><input type="checkbox" name="consent" required>Использую вымышленные сведения и согласен сохранить сообщение в проекте</label>','Отправить сообщение');
   }
   async function showSettings() {
     const {rows}=await api('/api/list/settings');
     const note=rows.find(r=>r.key==='project_note')?.value||'Демонстрационный набор кадрового процесса';
-    root.innerHTML=heading('Настройки учебного стенда')+form('settings',area('Примечание к проекту','value',note),'Сохранить примечание')+
+    root.innerHTML=heading('Настройки системы')+form('settings',area('Примечание к проекту','value',note),'Сохранить примечание')+
       '<article class="article"><h2>Работа с доступом</h2><p>Изменения пользователей фиксируются в журнале событий. Блокировка учётной записи завершает её активные сессии.</p><a href="/app/users">Открыть пользователей</a></article>';
   }
   async function loadPage() {
@@ -276,13 +276,13 @@ export function clientBootstrap() {
       else if(action==='new-vacancy') await newVacancy();
       else if(action==='new-request') await newRequest();
       else if(action==='new-plan') await newPlan();
-      else if(action==='new-user') modal('Новая учебная запись',form('new-user',input('Имя вымышленного пользователя','full_name')+input('Логин','username')+select('Роль','role_id',[['candidate','Соискатель / сотрудник'],['hr','Специалист службы персонала']])+input('Учебный пароль, от 12 символов','password','password','','true','autocomplete="new-password" minlength="12"'),'Создать'));
+      else if(action==='new-user') modal('Новая запись',form('new-user',input('ФИО пользователя','full_name')+input('Логин','username')+select('Роль','role_id',[['candidate','Соискатель / сотрудник'],['hr','Специалист службы персонала']])+input('Пароль, от 12 символов','password','password','','true','autocomplete="new-password" minlength="12"'),'Создать'));
       else if(action==='edit-vacancy') {
         const vacancy=currentRows.find(v=>v.id===id);
         modal('Редактирование вакансии',form('edit-vacancy',`<input type="hidden" name="version" value="${vacancy.version}">`+input('Должность','title','text',vacancy.title)+area('Обязанности','description',vacancy.description)+area('Требования','requirements',vacancy.requirements)+select('Статус','status',[['draft','Черновик'],['published','Опубликована'],['closed','Закрыта']],vacancy.status),'Сохранить',id));
       } else if(action==='interview-result') modal('Итог собеседования',form('interview-result',select('Статус','status',[['completed','Завершено'],['cancelled','Отменено']])+area('Итог встречи или причина отмены','result'),'Сохранить',id));
       else if(action==='read-notice') {await api(`/api/read-notice/${encodeURIComponent(id)}`,'POST',{});await showList('notifications');}
-      else if(action==='withdraw') modal('Отзыв отклика',`<p>Отклик будет отозван, запланированные встречи отменены. Повторный отклик на ту же учебную вакансию не создаётся.</p>`+form('withdraw','','Отозвать отклик',id));
+      else if(action==='withdraw') modal('Отзыв отклика',`<p>Отклик будет отозван, запланированные встречи отменены. Повторный отклик на ту же вакансию не создаётся.</p>`+form('withdraw','','Отозвать отклик',id));
       else if(action==='bulk-publish') {
         const ids=[...document.querySelectorAll('[name=bulk-vacancy]:checked')].map(input=>input.value);
         const result=await api('/api/admin/publish-vacancies','POST',{ids});
@@ -303,7 +303,7 @@ export function clientBootstrap() {
         toast('Решение по заявке сохранено.');await showList('requests');
       } else if(action==='toggle-user') {
         const row=currentRows.find(r=>r.id===id);
-        modal(row.active?'Блокировка пользователя':'Разблокировка пользователя',`<p>${esc(row.full_name)}</p><p>${row.active?'Активные сессии этой учебной записи будут завершены.':'Пользователь снова сможет войти в учебное приложение.'}</p>`+form('toggle-user',`<input type="hidden" name="id" value="${esc(id)}"><input type="hidden" name="active" value="${row.active?'false':'true'}">`,'Подтвердить'));
+        modal(row.active?'Блокировка пользователя':'Разблокировка пользователя',`<p>${esc(row.full_name)}</p><p>${row.active?'Активные сессии этой записи будут завершены.':'Пользователь снова сможет войти в приложение.'}</p>`+form('toggle-user',`<input type="hidden" name="id" value="${esc(id)}"><input type="hidden" name="active" value="${row.active?'false':'true'}">`,'Подтвердить'));
       }
     } catch(error){toast(error.message,true);}
     finally{if(target.isConnected)target.disabled=false;}
@@ -342,7 +342,7 @@ export function clientBootstrap() {
       else if(action==='edit-vacancy'){await api(`/api/vacancy/${encodeURIComponent(id)}`,'POST',data);closeModal();await showList('vacancies');}
       else if(action==='interview-result'){await api(`/api/interview/${encodeURIComponent(id)}`,'POST',data);closeModal();await showList('interviews');}
       else if(action==='withdraw'){await api(`/api/withdraw/${encodeURIComponent(id)}`,'POST',{});closeModal();await showList('applications');}
-      toast(action==='feedback'?'Сообщение сохранено в учебном проекте.':'Изменения сохранены.');
+      toast(action==='feedback'?'Сообщение сохранено в проекте.':'Изменения сохранены.');
     }catch(error){toast(error.message,true);}
     finally{if(submit.isConnected)submit.disabled=false;}
   });

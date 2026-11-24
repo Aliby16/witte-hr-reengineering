@@ -42,7 +42,7 @@ const server=createServer(async(incoming,outgoing)=>{
     console.error(error.name,error.message);
   }
 });
-server.listen(port,host,()=>console.log(`Учебный сервис запущен: http://localhost:${port}`));
+server.listen(port,host,()=>console.log(`Сервис запущен: http://localhost:${port}`));
 async function stop(){server.close();await database.close();process.exit(0);}
 process.on('SIGTERM',stop);
 process.on('SIGINT',stop);

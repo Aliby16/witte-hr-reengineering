@@ -16,7 +16,7 @@ export function renderShell(pathname, user = null, errorMessage = '') {
         <div class="hero-rule"></div>
         <h1>От заявки на подбор<br>до завершения адаптации</h1>
         <p class="lead">Единое пространство для соискателя и службы персонала. Отклики, оценка компетенций и первые задачи нового сотрудника связаны в одном процессе.</p>
-        <div class="actions"><a class="button" href="/p/vacancies">Посмотреть вакансии</a><a class="button secondary" href="/login">Открыть учебный кабинет</a></div>
+        <div class="actions"><a class="button" href="/p/vacancies">Посмотреть вакансии</a><a class="button secondary" href="/login">Открыть кабинет</a></div>
       </section>
       <div class="section-heading"><h2>Последовательность работы</h2><a href="/p/process">Все этапы отбора</a></div>
       <div class="grid">
@@ -32,7 +32,7 @@ export function renderShell(pathname, user = null, errorMessage = '') {
 <html lang="ru">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Учебный проект реинжиниринга подбора и адаптации сотрудников МУИВ">
+<meta name="description" content="Кадровые процессы МУИВ: подбор, оценка и адаптация сотрудников">
 <title>${htmlEscape(pageTitle)} · Кадровые процессы МУИВ</title>
 <link rel="stylesheet" href="/assets/styles.css">
 <script src="/assets/client.js" defer></script>
@@ -41,14 +41,14 @@ export function renderShell(pathname, user = null, errorMessage = '') {
 <a class="skip" href="#main">Перейти к содержанию</a>
 <header class="masthead"><div class="topline">
 <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">В</span><span><strong>Кадровые процессы</strong><small>Московский университет им. С.Ю. Витте</small></span></a>
-<div class="top-actions"><span class="project-label">Учебный проект</span><span id="account-label" class="account-label">${user ? htmlEscape(user.full_name) : ''}</span><a id="account-link" href="${user ? '/app/dashboard' : '/login'}">${user ? 'Личный кабинет' : 'Войти'}</a></div>
+<div class="top-actions"><span class="project-label">Служба персонала</span><span id="account-label" class="account-label">${user ? htmlEscape(user.full_name) : ''}</span><a id="account-link" href="${user ? '/app/dashboard' : '/login'}">${user ? 'Личный кабинет' : 'Войти'}</a></div>
 </div></header>
 <button class="mobile-nav" id="mobile-nav" aria-expanded="false" aria-controls="sidebar">Открыть меню</button>
 <div class="layout">
-<aside class="sidebar" id="sidebar"><nav aria-label="Главное меню"><p class="nav-label">Открытые разделы</p>${nav}</nav><div id="private-nav"></div><p class="sidebar-note">Используйте только учебные данные. Сервис не принимает реальные заявления о трудоустройстве.</p></aside>
+<aside class="sidebar" id="sidebar"><nav aria-label="Главное меню"><p class="nav-label">Открытые разделы</p>${nav}</nav><div id="private-nav"></div><p class="sidebar-note">Подбор, оценка компетенций и сопровождение адаптации сотрудников.</p></aside>
 <main class="content" id="main" tabindex="-1"><nav class="breadcrumbs" aria-label="Хлебные крошки"><a href="/">Главная</a><span>${pathname === '/' ? 'Обзор проекта' : htmlEscape(isPublic ? PUBLIC_PAGES[page]?.[0] || pageTitle : pageTitle)}</span></nav><div id="page-content">${content}</div></main>
 </div>
-<footer><div class="footer-inner"><span>Автор: Бисенкулова Алина Владиславовна · о.ИЗДт 30.3/Б3-22</span><span>Учебный проект · 2026</span></div></footer>
+<footer><div class="footer-inner"><span>Автор: Бисенкулова Алина Владиславовна · о.ИЗДт 30.3/Б3-22</span><span>Кадровые процессы МУИВ · 2026</span></div></footer>
 <div class="toast-stack" id="toasts" aria-live="polite"></div>
 <div id="modal-root"></div>
 </body></html>`;

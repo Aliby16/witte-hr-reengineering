@@ -106,13 +106,13 @@ test('план другого сотрудника закрыт для соис�
 });
 
 test('изменения профиля требуют CSRF-токен',async()=>{
-  const response=await call('/api/profile','POST',{education:'Учебные сведения'},'candidate',{noCsrf:true});
+  const response=await call('/api/profile','POST',{education:'Сведения'},'candidate',{noCsrf:true});
   assert.equal(response.status,403);
 });
 
 test('профиль сохраняется с явным согласием',async()=>{
   const response=await call('/api/profile','POST',{
-    education:'Высшее образование · тест',experience:'Учебный опыт сопровождения документов',
+    education:'Высшее образование · тест',experience:'Опыт сопровождения документов',
     about:'Вымышленные данные для проверки.',consent:true
   },'candidate');
   assert.equal(response.status,200);
@@ -127,8 +127,8 @@ test('соискатель не может создать вакансию',asyn
 
 test('кадровый специалист создаёт полноценную вакансию',async()=>{
   const response=await call('/api/vacancies','POST',{
-    title:'Учебный специалист реестра',department_id:'office',
-    description:'Сопровождение учебного реестра и проверка реквизитов документов.',
+    title:'Специалист реестра',department_id:'office',
+    description:'Сопровождение реестра и проверка реквизитов документов.',
     requirements:'Уверенная работа с таблицами и документами.',status:'published'
   },'hr');
   assert.equal(response.status,201);
@@ -141,18 +141,18 @@ test('пустое описание вакансии отклоняется',asy
 });
 
 test('соискатель отправляет отклик',async()=>{
-  const response=await call('/api/applications','POST',{vacancy_id:newVacancy,cover_letter:'Хочу применить навыки ведения учебного реестра.'},'candidate');
+  const response=await call('/api/applications','POST',{vacancy_id:newVacancy,cover_letter:'Хочу применить навыки ведения реестра.'},'candidate');
   assert.equal(response.status,201);
   newApplication=(await response.json()).id;
 });
 
 test('повторный отклик предотвращается ограничением уникальности',async()=>{
-  const response=await call('/api/applications','POST',{vacancy_id:newVacancy,cover_letter:'Повторный учебный отклик.'},'candidate');
+  const response=await call('/api/applications','POST',{vacancy_id:newVacancy,cover_letter:'Повторный отклик.'},'candidate');
   assert.equal(response.status,409);
 });
 
 test('нельзя пропустить этапы и сразу принять нового соискателя',async()=>{
-  assert.equal((await call(`/api/applications/${newApplication}`,'POST',{status:'hired',version:1,decision_note:'Учебное решение без оценки.'},'hr')).status,400);
+  assert.equal((await call(`/api/applications/${newApplication}`,'POST',{status:'hired',version:1,decision_note:'Решение без оценки.'},'hr')).status,400);
 });
 
 test('критический путь включает рассмотрение и собеседование',async()=>{
@@ -178,7 +178,7 @@ test('критический путь заполняет все оценки',as
   for(const competency of rows) {
     const response=await call('/api/assessments','POST',{
       application_id:newApplication,competency_id:competency.id,score:4,
-      evidence:'Учебное ситуационное задание выполнено с объяснением порядка действий.'
+      evidence:'Ситуационное задание выполнено с объяснением порядка действий.'
     },'hr');
     assert.equal(response.status,200);
   }
@@ -186,13 +186,13 @@ test('критический путь заполняет все оценки',as
 
 test('кадровое решение требует обоснования и правильной версии',async()=>{
   assert.equal((await call(`/api/applications/${newApplication}`,'POST',{status:'offer',version:3,decision_note:''},'hr')).status,400);
-  assert.equal((await call(`/api/applications/${newApplication}`,'POST',{status:'offer',version:3,decision_note:'Все учебные компетенции проверены по ситуационным заданиям.'},'hr')).status,200);
-  assert.equal((await call(`/api/applications/${newApplication}`,'POST',{status:'hired',version:4,decision_note:'Соискатель подтвердил предложение в учебном сценарии.'},'hr')).status,200);
+  assert.equal((await call(`/api/applications/${newApplication}`,'POST',{status:'offer',version:3,decision_note:'Все компетенции проверены по ситуационным заданиям.'},'hr')).status,200);
+  assert.equal((await call(`/api/applications/${newApplication}`,'POST',{status:'hired',version:4,decision_note:'Соискатель подтвердил предложение в сценарии.'},'hr')).status,200);
 });
 
 test('план адаптации создаётся после приёма',async()=>{
   const response=await call('/api/plans','POST',{
-    application_id:newApplication,title:'Учебная адаптация специалиста',
+    application_id:newApplication,title:'Адаптация специалиста',
     start_date:'2026-11-24',end_date:'2026-12-24'
   },'hr');
   assert.equal(response.status,201);
@@ -205,7 +205,7 @@ test('не допускается второй план на один приём
 
 test('срок задания контролируется периодом плана',async()=>{
   assert.equal((await call(`/api/plans/${newPlan}`,'POST',{title:'Задание за пределами периода',due_date:'2027-01-10'},'hr')).status,400);
-  assert.equal((await call(`/api/plans/${newPlan}`,'POST',{title:'Проверить учебный маршрут регистрации документа',due_date:'2026-12-01'},'hr')).status,200);
+  assert.equal((await call(`/api/plans/${newPlan}`,'POST',{title:'Проверить маршрут регистрации документа',due_date:'2026-12-01'},'hr')).status,200);
   const data=await (await call(`/api/plans/${newPlan}`,'GET',undefined,'hr')).json();
   newTask=data.tasks[0].id;
 });
@@ -215,7 +215,7 @@ test('план с невыполненным заданием не заверш�
 });
 
 test('критический путь завершается подтверждённой адаптацией',async()=>{
-  assert.equal((await call(`/api/tasks/${newTask}`,'POST',{evidence:'Учебный маршрут выполнен и проверен наставником.'},'hr')).status,200);
+  assert.equal((await call(`/api/tasks/${newTask}`,'POST',{evidence:'Маршрут выполнен и проверен наставником.'},'hr')).status,200);
   assert.equal((await call(`/api/plans/${newPlan}`,'POST',{action:'complete'},'hr')).status,200);
   const data=await (await call(`/api/plans/${newPlan}`,'GET',undefined,'candidate')).json();
   assert.equal(data.plan.status,'completed');
@@ -255,13 +255,13 @@ test('расширение PDF не подменяет проверку сигн
 });
 
 test('обратная связь сохраняется и защищена от мгновенного дублирования',async()=>{
-  const body={name:'Учебный пользователь',contact:'test@example.invalid',topic:'Проверка формы',message:'Проверяем сохранение учебного обращения.',consent:true};
+  const body={name:'Пользователь',contact:'test@example.invalid',topic:'Проверка формы',message:'Проверяем сохранение обращения.',consent:true};
   assert.equal((await call('/api/feedback','POST',body)).status,201);
   assert.equal((await call('/api/feedback','POST',body)).status,409);
 });
 
-test('администратор создаёт и блокирует учебного пользователя',async()=>{
-  const create=await call('/api/admin/create-user','POST',{username:'new-candidate',full_name:'Учебный тестовый соискатель',role_id:'candidate',password:DEMO_PASSWORD},'admin');
+test('администратор создаёт и блокирует пользователя',async()=>{
+  const create=await call('/api/admin/create-user','POST',{username:'new-candidate',full_name:'Тестовый соискатель',role_id:'candidate',password:DEMO_PASSWORD},'admin');
   assert.equal(create.status,201);
   const {id}=await create.json();
   assert.equal((await call('/api/admin/users','POST',{id,active:false},'admin')).status,200);
@@ -293,7 +293,7 @@ test('служебный журнал содержит действия без �
   assert.ok(!JSON.stringify(rows).includes(DEMO_PASSWORD));
 });
 
-test('контроль отклика учебной базы укладывается в две секунды',async()=>{
+test('контроль отклика базы укладывается в две секунды',async()=>{
   const start=performance.now();
   for(let index=0;index<10;index++)assert.equal((await call('/api/dashboard','GET',undefined,'hr')).status,200);
   assert.ok((performance.now()-start)/10<2000);

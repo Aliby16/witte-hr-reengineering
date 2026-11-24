@@ -23,12 +23,12 @@ export async function seedDemo(env) {
   ];
   for (const row of departments) put('INSERT INTO departments (id,title,description) VALUES (?,?,?)', row);
   const people = [
-    ['admin','admin','Учебный администратор','admin','it'],
-    ['hr','hr','Учебный специалист службы персонала','hr','personnel'],
-    ['candidate','candidate','Дарья Волкова · учебная запись','candidate',null],
-    ['candidate-2','candidate2','Михаил Белов · учебная запись','candidate',null],
-    ['candidate-3','candidate3','Анна Орлова · учебная запись','candidate',null],
-    ['candidate-4','candidate4','Иван Морозов · учебная запись','candidate',null]
+    ['admin','admin','Администратор','admin','it'],
+    ['hr','hr','Специалист службы персонала','hr','personnel'],
+    ['candidate','candidate','Дарья Волкова','candidate',null],
+    ['candidate-2','candidate2','Михаил Белов','candidate',null],
+    ['candidate-3','candidate3','Анна Орлова','candidate',null],
+    ['candidate-4','candidate4','Иван Морозов','candidate',null]
   ];
   for (const [id, username, fullName, role, department] of people) {
     put('INSERT INTO users (id,username,full_name,password_hash,salt,role_id,department_id,active,created_at) VALUES (?,?,?,?,?,?,?,?,?)',
@@ -36,26 +36,26 @@ export async function seedDemo(env) {
     if (role === 'candidate') {
       put('INSERT INTO profiles (user_id,education,experience,about,consent,updated_at) VALUES (?,?,?,?,?,?)',
         [id, 'Высшее образование · демонстрационный пример', 'Опыт работы с обращениями и документами',
-          'Учебная карточка для проверки функций сервиса. Сведения вымышлены.', 1, date]);
+          'Карточка для проверки функций сервиса. Сведения вымышлены.', 1, date]);
     }
   }
   const jobs = [
     ['student-manager','student-office','Менеджер студенческого офиса',
-      'Приём обращений обучающихся, проверка комплектности заявлений и подготовка справок. Учебная вакансия для демонстрации процесса.',
+      'Приём обращений обучающихся, проверка комплектности заявлений и подготовка справок. Вакансия для демонстрации процесса.',
       'Работа с офисными приложениями, грамотная речь, внимательность к документам.'],
     ['support-specialist','it','Специалист поддержки информационных систем',
-      'Регистрация заявок пользователей, первичная диагностика и передача сложных обращений профильным специалистам. Учебный пример.',
+      'Регистрация заявок пользователей, первичная диагностика и передача сложных обращений профильным специалистам. Пример.',
       'Понимание устройства веб-приложений, умение описывать неисправности и работать по инструкции.'],
     ['records-specialist','office','Специалист по документообороту',
-      'Регистрация входящих документов, контроль реквизитов и соблюдения установленных сроков. Учебный пример.',
+      'Регистрация входящих документов, контроль реквизитов и соблюдения установленных сроков. Пример.',
       'Навыки деловой переписки, систематизации документов и работы с электронными реестрами.'],
     ['hr-coordinator','personnel','Координатор адаптации персонала',
-      'Сопровождение планов адаптации, организация встреч с наставниками и сбор подтверждений выполнения задач. Учебный пример.',
+      'Сопровождение планов адаптации, организация встреч с наставниками и сбор подтверждений выполнения задач. Пример.',
       'Организация встреч, работа с таблицами, внимание к срокам и защите служебной информации.']
   ];
   for (const [id, department, title, description, requirements] of jobs) {
     put('INSERT INTO requests (id,department_id,title,justification,status,owner_id,created_at) VALUES (?,?,?,?,?,?,?)',
-      [`req-${id}`, department, title, 'Учебная заявка на подбор для проверки маршрута согласования.', 'approved', 'hr', date]);
+      [`req-${id}`, department, title, 'Заявка на подбор для проверки маршрута согласования.', 'approved', 'hr', date]);
     put('INSERT INTO vacancies (id,request_id,department_id,title,description,requirements,schedule,status,created_at) VALUES (?,?,?,?,?,?,?,?,?)',
       [id, `req-${id}`, department, title, description, requirements, 'График согласуется при собеседовании', 'published', date]);
   }
@@ -82,8 +82,8 @@ export async function seedDemo(env) {
   ];
   for (const [id, job, candidate, status] of applications) {
     put('INSERT INTO applications (id,vacancy_id,candidate_id,cover_letter,status,decision_note,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?)',
-      [id, job, candidate, 'Учебный отклик. Хочу применить навыки работы с обращениями и документами.', status,
-        status === 'hired' ? 'Учебное решение после проверки всех компетенций.' : '', '2026-11-18T09:00:00.000Z', date]);
+      [id, job, candidate, 'Отклик. Хочу применить навыки работы с обращениями и документами.', status,
+        status === 'hired' ? 'Решение после проверки всех компетенций.' : '', '2026-11-18T09:00:00.000Z', date]);
   }
   for (const app of ['app-1','app-3']) {
     for (const [index, competency] of competencies.entries()) {
@@ -93,23 +93,23 @@ export async function seedDemo(env) {
     }
   }
   put('INSERT INTO interviews (id,application_id,interviewer_id,scheduled_at,format,status,created_at) VALUES (?,?,?,?,?,?,?)',
-    ['interview-1','app-1','hr','2026-11-27T10:00','Видеовстреча · учебный пример','planned',date]);
+    ['interview-1','app-1','hr','2026-11-27T10:00','Видеовстреча · пример','planned',date]);
   put('INSERT INTO adaptation_plans (id,application_id,employee_id,mentor_id,title,start_date,end_date,status,created_at) VALUES (?,?,?,?,?,?,?,?,?)',
     ['plan-1','app-3','candidate-3','hr','Первый месяц специалиста по документообороту','2026-11-23','2026-12-23','active',date]);
   for (const [index,title] of [
     'Ознакомиться с правилами внутреннего распорядка',
-    'Получить доступ к учебным информационным ресурсам',
+    'Получить доступ к информационным ресурсам',
     'Разобрать маршрут регистрации документа с наставником',
-    'Выполнить учебное задание и получить обратную связь'
+    'Выполнить задание и получить обратную связь'
   ].entries()) {
     put('INSERT INTO adaptation_tasks (id,plan_id,title,due_date,status,evidence,completed_at) VALUES (?,?,?,?,?,?,?)',
       [`task-${index+1}`,'plan-1',title,`2026-11-${25+index}`,
-        index === 0 ? 'done' : 'todo',index === 0 ? 'Ознакомление подтверждено в учебном сценарии.' : '',index === 0 ? date : null]);
+        index === 0 ? 'done' : 'todo',index === 0 ? 'Ознакомление подтверждено в сценарии.' : '',index === 0 ? date : null]);
   }
   put('INSERT INTO notifications (id,user_id,title,body,created_at) VALUES (?,?,?,?,?)',
     ['notice-welcome','candidate','Приглашение на собеседование','Дата и формат доступны в разделе «Мои собеседования».',date]);
   put('INSERT INTO audit_events (id,actor_id,action,entity_type,entity_id,details,created_at) VALUES (?,?,?,?,?,?,?)',
-    [uid('event'),'admin','Создание учебного набора','demo','initial','Все персональные записи вымышлены.',date]);
+    [uid('event'),'admin','Создание набора','demo','initial','Все персональные записи вымышлены.',date]);
   try {
     await env.DB.batch(operations);
     return true;

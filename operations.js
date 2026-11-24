@@ -110,7 +110,7 @@ export async function additionalOperations(request, env, user, pathname) {
     const password=typeof body.password==='string'?body.password:'';
     must(/^[a-z][a-z0-9_-]{2,59}$/.test(username),
       'Логин: 3–60 латинских букв, цифр, дефисов или подчёркиваний.');
-    must(fullName.length>=5,'Укажите имя учебной учётной записи.');
+    must(fullName.length>=5,'Укажите имя учётной записи.');
     must(['hr','candidate'].includes(role),'Для новой записи доступны роли специалиста или соискателя.');
     must(password.length>=12&&password.length<=128,'Пароль должен содержать от 12 до 128 символов.');
     const exists=await dbOne(env,'SELECT id FROM users WHERE username=?',[username]);
@@ -121,7 +121,7 @@ export async function additionalOperations(request, env, user, pathname) {
     const operations=[
       statement(env,'INSERT INTO users (id,username,full_name,password_hash,salt,role_id,active,created_at) VALUES (?,?,?,?,?,?,?,?)',
         [id,username,fullName,passwordHash,salt,role,1,now()]),
-      auditStatement(env,user,'Создание учебной записи','user',id,role)
+      auditStatement(env,user,'Создание записи','user',id,role)
     ];
     if(role==='candidate')operations.push(statement(env,
       'INSERT INTO profiles (user_id,education,experience,about,consent,updated_at) VALUES (?,?,?,?,?,?)',

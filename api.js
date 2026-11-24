@@ -19,7 +19,7 @@ async function login(request, env) {
   const password = typeof body.password === 'string' ? body.password : '';
   must(username && password && password.length <= 128, 'Введите логин и пароль.');
   const initialized = await dbOne(env, 'SELECT value FROM settings WHERE key=?', ['demo_initialized']);
-  must(initialized, 'Сначала создайте учебный набор кнопкой на странице входа.', 409);
+  must(initialized, 'Сначала создайте набор кнопкой на странице входа.', 409);
   const key = await digest(`${request.headers.get('cf-connecting-ip') || 'local'}:${username}`);
   const attempt = await dbOne(env, 'SELECT * FROM login_attempts WHERE attempt_key=?', [key]);
   const recent = attempt && Date.now() - Date.parse(attempt.last_at) < 15 * 60 * 1000;
@@ -433,7 +433,7 @@ export async function handleApi(request, env) {
     const topic = safeText(body.topic,160);
     const message = safeText(body.message,3000);
     must(name.length >= 2 && contact.length >= 3 && topic.length >= 3 && message.length >= 15,'Заполните все поля. Сообщение должно содержать не менее 15 символов.');
-    must(body.consent === true,'Подтвердите использование учебных данных.');
+    must(body.consent === true,'Подтвердите использование данных.');
     const duplicate = await dbOne(env,'SELECT id FROM feedback WHERE contact=? AND message=? AND created_at>?',[contact,message,new Date(Date.now()-60000).toISOString()]);
     must(!duplicate,'Сообщение уже отправлено.',409);
     await dbRun(env,'INSERT INTO feedback (id,name,contact,topic,message,created_at) VALUES (?,?,?,?,?,?)',[uid('feedback'),name,contact,topic,message,now()]);
@@ -463,7 +463,7 @@ export async function handleApi(request, env) {
       ]);
     } else if(action==='settings') {
       const text=safeText(body.value,500);
-      must(text.length>=3,'Введите примечание к учебному стенду.');
+      must(text.length>=3,'Введите примечание к стенду.');
       await env.DB.batch([
         statement(env,"INSERT INTO settings (key,value) VALUES ('project_note',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",[text]),
         auditStatement(env,user,'Изменение примечания','setting','project_note',text)
@@ -484,7 +484,7 @@ export async function handleApi(request, env) {
     const tasks=await dbAll(env,'SELECT * FROM adaptation_tasks WHERE plan_id=? ORDER BY due_date',[plan.id]);
     const paragraphs=[`Период: ${plan.start_date} — ${plan.end_date}`,`Статус: ${plan.status==='active'?'В работе':'Завершён'}`,
       ...tasks.map(t=>`${t.title}. Срок: ${t.due_date}. ${t.status==='done'?'Выполнено':'Предстоит выполнить'}. ${t.evidence}`),
-      'Документ сформирован из учебного набора данных.'];
+      'Документ сформирован из набора данных.'];
     return new Response(exportDocx(plan.title,paragraphs),{headers:{'Content-Type':'application/vnd.openxmlformats-officedocument.wordprocessingml.document','Content-Disposition':'attachment; filename="adaptation-plan.docx"','Cache-Control':'no-store'}});
   }
   if (method === 'GET' && path === '/api/health') return json({ok:true,version:'1.0.0',mode:'educational'});
