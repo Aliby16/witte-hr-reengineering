@@ -186,7 +186,7 @@ export function clientBootstrap(safeReturnPath) {
       cells=rows.map(a=>[esc(a.candidate_name),esc(a.vacancy_title),pill(a.status),date(a.created_at),button('Открыть','application',a.id,true)]);
     } else if(currentPage==='vacancies') {
       headers=['Вакансия','Подразделение','Статус','Дата','Действия'];
-      cells=rows.map(v=>[esc(v.title),esc(v.department_title),pill(v.status),date(v.created_at),`<div class="actions">${button('Редактировать','edit-vacancy',v.id,true)}${button('Копировать','clone-vacancy',v.id,true)}</div>`]);
+      cells=rows.map(v=>[esc(v.title),esc(v.department_title),pill(v.status),date(v.created_at),`<div class="actions">${button('Редактировать','edit-vacancy',v.id,true)}${button('Копировать','clone-vacancy',v.id,true)}${v.status==='draft'?button('Компетенции','vacancy-profile',v.id,true):''}</div>`]);
       if(user.role_id==='admin')cells=rows.map((v,i)=>[...cells[i],v.status==='draft'?`<label><input type="checkbox" name="bulk-vacancy" value="${esc(v.id)}"> Выбрать</label>`:'—']);
       if(user.role_id==='admin')headers.push('Массовое действие');
     } else if(currentPage==='requests') {
@@ -340,6 +340,11 @@ export function clientBootstrap(safeReturnPath) {
       else if(action==='new-request') await newRequest();
       else if(action==='new-plan') await newPlan();
       else if(action==='clone-vacancy'){await api(`/api/clone-vacancy/${encodeURIComponent(id)}`,'POST',{});toast('Создан новый черновик вакансии.');await showList('vacancies');}
+      else if(action==='vacancy-profile'){
+        const vacancy=currentRows.find(v=>v.id===id),competencies=(await api('/api/list/competencies')).rows;
+        const selected=(await api(`/api/vacancy-profile/${encodeURIComponent(id)}`)).rows;
+        modal('Профиль компетенций вакансии',form('vacancy-profile',`<input type="hidden" name="version" value="${vacancy.version}"><p>Укажите целевой уровень от 1 до 5. Значение 0 исключает компетенцию. Для вакансии с откликами используйте копирование.</p>`+competencies.map(c=>input(c.title,'level_'+c.id,'number',selected.find(s=>s.competency_id===c.id)?.target_level||0,true,'min="0" max="5" step="1"')).join(''),'Сохранить',id));
+      }
       else if(action==='new-user') modal('Новая запись',form('new-user',input('ФИО пользователя','full_name')+input('Логин','username')+select('Роль','role_id',[['candidate','Соискатель / сотрудник'],['hr','Специалист службы персонала']])+input('Пароль, от 12 символов','password','password','','true','autocomplete="new-password" minlength="12"'),'Создать'));
       else if(action==='edit-vacancy') {
         const vacancy=currentRows.find(v=>v.id===id);
@@ -398,6 +403,10 @@ export function clientBootstrap(safeReturnPath) {
       else if(action==='revoke-sessions'){await api('/api/sessions/revoke-others','POST',{});await showProfile();}
       else if(action==='apply'){await api('/api/applications','POST',{...data,vacancy_id:id});closeModal();}
       else if(action==='vacancy'){await api('/api/vacancies','POST',data);closeModal();await showList('vacancies');}
+      else if(action==='vacancy-profile'){
+        const items=Object.entries(data).filter(([key,value])=>key.startsWith('level_')&&Number(value)>0).map(([key,value])=>({competency_id:key.slice(6),target_level:Number(value)}));
+        await api(`/api/vacancy-competencies/${encodeURIComponent(id)}`,'POST',{version:data.version,items});closeModal();await showList('vacancies');
+      }
       else if(action==='request'){await api('/api/requests','POST',data);closeModal();await showList('requests');}
       else if(action==='assessment'){await api('/api/assessments','POST',data);await applicationModal(data.application_id);}
       else if(action==='application-status'){await api(`/api/applications/${encodeURIComponent(id)}`,'POST',data);await applicationModal(id);}

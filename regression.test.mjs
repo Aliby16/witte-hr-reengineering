@@ -49,6 +49,15 @@ async function fixture(t){
   return {env,DB,call,auth};
 }
 
+test('профиль компетенций изменяется только у черновика без откликов',async t=>{
+  const {call,DB}=await fixture(t);
+  const body={version:1,items:[{competency_id:'digital',target_level:4}]};
+  assert.equal((await call('/api/vacancy-competencies/student-manager','POST',body,'hr')).status,400);
+  const {id}=await(await call('/api/clone-vacancy/student-manager','POST',{},'hr')).json();
+  assert.equal((await call('/api/vacancy-competencies/'+id,'POST',body,'hr')).status,200);
+  assert.deepEqual((await DB.prepare('SELECT competency_id,target_level FROM vacancy_competencies WHERE vacancy_id=?').bind(id).all()).results.map(r=>({...r})),[{competency_id:'digital',target_level:4}]);
+});
+
 test('копирование вакансии создаёт отдельный черновик с тем же профилем',async t=>{
   const {call,DB}=await fixture(t);
   assert.equal((await call('/api/clone-vacancy/student-manager','POST',{},'candidate')).status,403);

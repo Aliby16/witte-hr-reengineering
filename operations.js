@@ -1,5 +1,5 @@
 import {
-  uid, now, safeText, must, requireRole, json, parseBody, hashPassword
+  uid, now, safeText, must, requireRole, json, parseBody, hashPassword, validatedInteger
 } from './security.js';
 import {
   dbAll, dbOne, dbRun, statement, auditStatement, notificationStatement, applicationFor
@@ -8,6 +8,31 @@ import {
 export async function additionalOperations(request, env, user, pathname) {
   if (request.method !== 'POST') return null;
   const staffRoles = ['admin','hr'];
+
+  if(pathname.startsWith('/api/vacancy-competencies/')){
+    requireRole(user,staffRoles);
+    const id=pathname.slice('/api/vacancy-competencies/'.length),body=await parseBody(request);
+    const vacancy=await dbOne(env,'SELECT * FROM vacancies WHERE id=?',[id]);
+    must(vacancy,'Вакансия не найдена.',404);
+    must(vacancy.status==='draft','Профиль изменяется у черновика вакансии.');
+    must(!await dbOne(env,'SELECT id FROM applications WHERE vacancy_id=?',[id]),'Для вакансии с откликами создайте отдельный черновик.',409);
+    must(Number(body.version)===vacancy.version,'Вакансия уже изменена.',409);
+    must(Array.isArray(body.items)&&body.items.length>=1&&body.items.length<=30,'Выберите от 1 до 30 компетенций.');
+    const ids=new Set(),items=[];
+    for(const item of body.items){
+      const competency=safeText(item?.competency_id,100);
+      must(!ids.has(competency),'Компетенция повторяется.');ids.add(competency);
+      must(await dbOne(env,'SELECT id FROM competencies WHERE id=?',[competency]),'Компетенция не найдена.');
+      items.push([id,competency,validatedInteger(item.target_level,1,5,'Целевой уровень')]);
+    }
+    await env.DB.batch([
+      statement(env,'DELETE FROM vacancy_competencies WHERE vacancy_id=?',[id]),
+      ...items.map(values=>statement(env,'INSERT INTO vacancy_competencies (vacancy_id,competency_id,target_level) VALUES (?,?,?)',values)),
+      statement(env,'UPDATE vacancies SET version=version+1 WHERE id=?',[id]),
+      auditStatement(env,user,'Изменение профиля компетенций','vacancy',id,String(items.length))
+    ]);
+    return json({ok:true});
+  }
 
   if(pathname.startsWith('/api/clone-vacancy/')){
     requireRole(user,staffRoles);

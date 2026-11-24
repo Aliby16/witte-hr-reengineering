@@ -17,7 +17,7 @@ export function allowedApiMethods(path){
   if(path==='/api/profile'||/^\/api\/(applications|plans)\/[^/]+$/.test(path))return ['GET','HEAD','POST'];
   if(/^\/api\/files\/[^/]+$/.test(path))return ['GET','HEAD'];
   if(['/api/demo/start','/api/login','/api/logout','/api/sessions/revoke-others','/api/notices/read-all','/api/applications','/api/vacancies','/api/assessments','/api/interviews','/api/plans','/api/files','/api/requests','/api/feedback'].includes(path)||
-    /^\/api\/(vacancy|clone-vacancy|interview|withdraw|read-notice|tasks|requests|admin)\//.test(path))return ['POST'];
+    /^\/api\/(vacancy|vacancy-competencies|clone-vacancy|interview|withdraw|read-notice|tasks|requests|admin)\//.test(path))return ['POST'];
   return null;
 }
 
@@ -326,6 +326,11 @@ export async function handleApi(request, env) {
     return json({ ok: true }, 200, { 'Set-Cookie': 'witte_session=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0' });
   }
   if (method === 'GET' && path === '/api/dashboard') return json(await dashboard(env, user));
+  if(method==='GET'&&path.startsWith('/api/vacancy-profile/')){
+    requireRole(user,STAFF);
+    const rows=await dbAll(env,'SELECT competency_id,target_level FROM vacancy_competencies WHERE vacancy_id=?',[path.slice('/api/vacancy-profile/'.length)]);
+    return json({rows});
+  }
   if (method === 'GET' && path.startsWith('/api/list/')) return json({ rows: await listRecords(env, user, path.slice(10)) });
   if (path === '/api/profile') {
     requireRole(user, ['admin','hr','candidate']);
