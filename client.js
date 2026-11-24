@@ -208,8 +208,8 @@ export function clientBootstrap(safeReturnPath) {
       headers=['Уведомление','Сообщение','Дата','Прочитано'];
       cells=rows.map(n=>[esc(n.title),esc(n.body),date(n.created_at),n.read_at?'Да':button('Отметить','read-notice',n.id,true)]);
     } else if(currentPage==='users') {
-      headers=['Имя','Логин','Роль','Состояние','Действие'];
-      cells=rows.map(u=>[esc(u.full_name),esc(u.username),esc(roleNames[u.role_id]),u.active?'Активна':'Заблокирована',u.id===user.id?'Текущая запись':button(u.active?'Заблокировать':'Разблокировать','toggle-user',u.id,true)]);
+      headers=['Имя','Логин','Роль','Подразделение','Состояние','Действие'];
+      cells=rows.map(u=>[esc(u.full_name),esc(u.username),esc(roleNames[u.role_id]),esc(u.department_title||'Не назначено'),u.active?'Активна':'Заблокирована',`<div class="actions">${button('Подразделение','user-department',u.id,true)}${u.id===user.id?'Текущая запись':button(u.active?'Заблокировать':'Разблокировать','toggle-user',u.id,true)}</div>`]);
     } else if(currentPage==='departments') {
       headers=['Подразделение','Назначение','Действия'];
       cells=rows.map(d=>[esc(d.title),esc(d.description),button('Редактировать','edit-department',d.id,true)]);
@@ -339,6 +339,11 @@ export function clientBootstrap(safeReturnPath) {
       else if(action==='new-vacancy') await newVacancy();
       else if(action==='new-request') await newRequest();
       else if(action==='new-plan') await newPlan();
+      else if(action==='user-department'){
+        const row=currentRows.find(u=>u.id===id),departments=(await api('/api/list/departments')).rows;
+        modal('Подразделение пользователя',form('user-department',select('Подразделение','department_id',[['','Без подразделения'],...departments.map(d=>[d.id,d.title])],row.department_id||''),'Сохранить',id));
+        $('.modal select').required=false;
+      }
       else if(action==='clone-vacancy'){await api(`/api/clone-vacancy/${encodeURIComponent(id)}`,'POST',{});toast('Создан новый черновик вакансии.');await showList('vacancies');}
       else if(action==='vacancy-profile'){
         const vacancy=currentRows.find(v=>v.id===id),competencies=(await api('/api/list/competencies')).rows;
@@ -425,6 +430,7 @@ export function clientBootstrap(safeReturnPath) {
       else if(action==='edit-department'){await api('/api/admin/edit-department','POST',{...data,id});closeModal();await showList('departments');}
       else if(action==='toggle-user'){await api('/api/admin/users','POST',{id:data.id,active:data.active==='true'});closeModal();await showList('users');}
       else if(action==='new-user'){await api('/api/admin/create-user','POST',data);closeModal();await showList('users');}
+      else if(action==='user-department'){await api('/api/admin/user-department','POST',{...data,id});closeModal();await showList('users');}
       else if(action==='edit-vacancy'){await api(`/api/vacancy/${encodeURIComponent(id)}`,'POST',data);closeModal();await showList('vacancies');}
       else if(action==='interview-result'){await api(`/api/interview/${encodeURIComponent(id)}`,'POST',data);closeModal();await showList('interviews');}
       else if(action==='withdraw'){await api(`/api/withdraw/${encodeURIComponent(id)}`,'POST',{});closeModal();await showList('applications');}

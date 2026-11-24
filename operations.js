@@ -9,6 +9,18 @@ export async function additionalOperations(request, env, user, pathname) {
   if (request.method !== 'POST') return null;
   const staffRoles = ['admin','hr'];
 
+  if(pathname==='/api/admin/user-department'){
+    requireRole(user,['admin']);const body=await parseBody(request),id=safeText(body.id,100);
+    const target=await dbOne(env,'SELECT id FROM users WHERE id=?',[id]);must(target,'Пользователь не найден.',404);
+    const department=safeText(body.department_id,100)||null;
+    if(department)must(await dbOne(env,'SELECT id FROM departments WHERE id=?',[department]),'Подразделение не найдено.');
+    await env.DB.batch([
+      statement(env,'UPDATE users SET department_id=? WHERE id=?',[department,id]),
+      auditStatement(env,user,'Назначение подразделения','user',id,department||'Без подразделения')
+    ]);
+    return json({ok:true});
+  }
+
   if(pathname==='/api/admin/edit-department'){
     requireRole(user,['admin']);const body=await parseBody(request),id=safeText(body.id,100);
     const row=await dbOne(env,'SELECT * FROM departments WHERE id=?',[id]);must(row,'Подразделение не найдено.',404);

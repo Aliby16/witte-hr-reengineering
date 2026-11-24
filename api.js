@@ -285,7 +285,7 @@ async function listRecords(env, user, type) {
   }
   requireRole(user, ['admin']);
   if (type === 'roles') return dbAll(env, 'SELECT r.id,r.title,COUNT(u.id) user_count FROM roles r LEFT JOIN users u ON u.role_id=r.id GROUP BY r.id,r.title ORDER BY r.title');
-  if (type === 'users') return dbAll(env, 'SELECT id,username,full_name,role_id,department_id,active,created_at FROM users ORDER BY created_at');
+  if (type === 'users') return dbAll(env, 'SELECT u.id,u.username,u.full_name,u.role_id,u.department_id,u.active,u.created_at,d.title department_title FROM users u LEFT JOIN departments d ON d.id=u.department_id ORDER BY u.created_at');
   if (type === 'audit') return dbAll(env, 'SELECT a.*,u.full_name actor_name FROM audit_events a LEFT JOIN users u ON u.id=a.actor_id ORDER BY a.created_at DESC LIMIT 200');
   if (type === 'settings') return dbAll(env, 'SELECT key,value FROM settings ORDER BY key');
   throw new AppError(404, 'Раздел не найден.');

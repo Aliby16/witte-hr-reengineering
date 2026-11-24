@@ -49,6 +49,14 @@ async function fixture(t){
   return {env,DB,call,auth};
 }
 
+test('назначение подразделения проверяет роль и существование справочника',async t=>{
+  const {call,DB}=await fixture(t);
+  assert.equal((await call('/api/admin/user-department','POST',{id:'candidate-3',department_id:'it'},'hr')).status,403);
+  assert.equal((await call('/api/admin/user-department','POST',{id:'candidate-3',department_id:'missing'},'admin')).status,400);
+  assert.equal((await call('/api/admin/user-department','POST',{id:'candidate-3',department_id:'it'},'admin')).status,200);
+  assert.equal((await DB.prepare('SELECT department_id FROM users WHERE id=?').bind('candidate-3').first()).department_id,'it');
+});
+
 test('изменение подразделения доступно администратору с сохранением связей',async t=>{
   const {call,DB}=await fixture(t);const body={id:'it',title:'Департамент ИТ',description:'Поддержка информационных систем'};
   assert.equal((await call('/api/admin/edit-department','POST',body,'hr')).status,403);
