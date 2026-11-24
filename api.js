@@ -13,7 +13,7 @@ import { additionalOperations, assertInterviewSlot } from './operations.js';
 const STAFF = ['admin', 'hr'];
 
 export function allowedApiMethods(path){
-  if(['/api/me','/api/health','/api/dashboard','/api/sessions'].includes(path)||/^\/api\/(list|export)\//.test(path))return ['GET','HEAD'];
+  if(['/api/me','/api/health','/api/dashboard','/api/sessions'].includes(path)||/^\/api\/(list|export|vacancy-profile)\//.test(path))return ['GET','HEAD'];
   if(path==='/api/profile'||/^\/api\/(applications|plans)\/[^/]+$/.test(path))return ['GET','HEAD','POST'];
   if(/^\/api\/files\/[^/]+$/.test(path))return ['GET','HEAD'];
   if(['/api/demo/start','/api/login','/api/logout','/api/sessions/revoke-others','/api/notices/read-all','/api/applications','/api/vacancies','/api/assessments','/api/interviews','/api/plans','/api/files','/api/requests','/api/feedback'].includes(path)||

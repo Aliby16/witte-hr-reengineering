@@ -4,13 +4,15 @@ import { Readable } from 'node:stream';
 import path from 'node:path';
 import worker from './worker.js';
 import { SqliteAdapter, PostgresAdapter, LocalBucket } from './local-db.js';
+import { NeonAdapter } from './neon-db.js';
 
 const projectRoot=path.dirname(new URL(import.meta.url).pathname);
 const runtimeDir=path.join(projectRoot,'.sites-runtime');
 mkdirSync(runtimeDir,{recursive:true});
 const schema=readFileSync(path.join(projectRoot,'schema.sql'),'utf8');
 const database=process.env.DATABASE_URL?
-  await PostgresAdapter.connect(process.env.DATABASE_URL,schema):
+  (new URL(process.env.DATABASE_URL).hostname.endsWith('.neon.tech')?
+    new NeonAdapter(process.env.DATABASE_URL):await PostgresAdapter.connect(process.env.DATABASE_URL,schema)):
   new SqliteAdapter(path.join(runtimeDir,'data.sqlite'));
 if(database instanceof SqliteAdapter)database.initialize(schema);
 const env={DB:database,BUCKET:new LocalBucket(path.join(runtimeDir,'files'))};

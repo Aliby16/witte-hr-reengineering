@@ -9,7 +9,9 @@
     "test": "node --test app.test.mjs regression.test.mjs",
     "build": "node build.mjs",
     "validate": "node scripts/validate-artifact.mjs",
-    "db:export": "node export-database.mjs"
+    "db:export": "node export-database.mjs",
+    "db:init": "node initialize-database.mjs",
+    "test:postgres": "node postgres-check.mjs"
   },
   "engines": { "node": ">=24" },
   "dependencies": { "@neondatabase/serverless": "1.2.1" },
