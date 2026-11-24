@@ -49,6 +49,15 @@ async function fixture(t){
   return {env,DB,call,auth};
 }
 
+test('копирование вакансии создаёт отдельный черновик с тем же профилем',async t=>{
+  const {call,DB}=await fixture(t);
+  assert.equal((await call('/api/clone-vacancy/student-manager','POST',{},'candidate')).status,403);
+  const response=await call('/api/clone-vacancy/student-manager','POST',{},'hr');
+  assert.equal(response.status,201);const {id}=await response.json();
+  assert.equal((await DB.prepare('SELECT status FROM vacancies WHERE id=?').bind(id).first()).status,'draft');
+  assert.equal((await DB.prepare('SELECT COUNT(*) total FROM vacancy_competencies WHERE vacancy_id=?').bind(id).first()).total,5);
+});
+
 test('пустое обязательное поле при изменении вакансии отклоняется',async t=>{
   const {call,DB}=await fixture(t);
   const response=await call('/api/vacancy/student-manager','POST',{version:1,status:'published',title:'   '},'hr');

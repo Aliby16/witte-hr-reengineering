@@ -186,7 +186,7 @@ export function clientBootstrap(safeReturnPath) {
       cells=rows.map(a=>[esc(a.candidate_name),esc(a.vacancy_title),pill(a.status),date(a.created_at),button('Открыть','application',a.id,true)]);
     } else if(currentPage==='vacancies') {
       headers=['Вакансия','Подразделение','Статус','Дата','Действия'];
-      cells=rows.map(v=>[esc(v.title),esc(v.department_title),pill(v.status),date(v.created_at),button('Редактировать','edit-vacancy',v.id,true)]);
+      cells=rows.map(v=>[esc(v.title),esc(v.department_title),pill(v.status),date(v.created_at),`<div class="actions">${button('Редактировать','edit-vacancy',v.id,true)}${button('Копировать','clone-vacancy',v.id,true)}</div>`]);
       if(user.role_id==='admin')cells=rows.map((v,i)=>[...cells[i],v.status==='draft'?`<label><input type="checkbox" name="bulk-vacancy" value="${esc(v.id)}"> Выбрать</label>`:'—']);
       if(user.role_id==='admin')headers.push('Массовое действие');
     } else if(currentPage==='requests') {
@@ -339,6 +339,7 @@ export function clientBootstrap(safeReturnPath) {
       else if(action==='new-vacancy') await newVacancy();
       else if(action==='new-request') await newRequest();
       else if(action==='new-plan') await newPlan();
+      else if(action==='clone-vacancy'){await api(`/api/clone-vacancy/${encodeURIComponent(id)}`,'POST',{});toast('Создан новый черновик вакансии.');await showList('vacancies');}
       else if(action==='new-user') modal('Новая запись',form('new-user',input('ФИО пользователя','full_name')+input('Логин','username')+select('Роль','role_id',[['candidate','Соискатель / сотрудник'],['hr','Специалист службы персонала']])+input('Пароль, от 12 символов','password','password','','true','autocomplete="new-password" minlength="12"'),'Создать'));
       else if(action==='edit-vacancy') {
         const vacancy=currentRows.find(v=>v.id===id);

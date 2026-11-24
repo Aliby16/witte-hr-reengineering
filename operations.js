@@ -9,6 +9,21 @@ export async function additionalOperations(request, env, user, pathname) {
   if (request.method !== 'POST') return null;
   const staffRoles = ['admin','hr'];
 
+  if(pathname.startsWith('/api/clone-vacancy/')){
+    requireRole(user,staffRoles);
+    const source=await dbOne(env,'SELECT * FROM vacancies WHERE id=?',[pathname.slice('/api/clone-vacancy/'.length)]);
+    must(source,'Вакансия не найдена.',404);
+    const profile=await dbAll(env,'SELECT * FROM vacancy_competencies WHERE vacancy_id=?',[source.id]);
+    const id=uid('vacancy');
+    await env.DB.batch([
+      statement(env,'INSERT INTO vacancies (id,department_id,title,description,requirements,schedule,status,created_at) VALUES (?,?,?,?,?,?,?,?)',
+        [id,source.department_id,safeText('Копия: '+source.title,160),source.description,source.requirements,source.schedule,'draft',now()]),
+      ...profile.map(row=>statement(env,'INSERT INTO vacancy_competencies (vacancy_id,competency_id,target_level) VALUES (?,?,?)',[id,row.competency_id,row.target_level])),
+      auditStatement(env,user,'Копирование вакансии','vacancy',id,source.id)
+    ]);
+    return json({ok:true,id},201);
+  }
+
   if(pathname==='/api/notices/read-all'){
     requireRole(user,['admin','hr','candidate']);
     const result=await dbRun(env,'UPDATE notifications SET read_at=? WHERE user_id=? AND read_at IS NULL',[now(),user.id]);
