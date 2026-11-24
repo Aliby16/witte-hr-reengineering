@@ -17,6 +17,17 @@ test('текст нормализует Unicode и удаляет управля
 });
 import { NeonAdapter, postgresParameters, postgresRows } from './neon-db.js';
 import { neonConfig } from '@neondatabase/serverless';
+import worker from './worker.js';
+
+test('HEAD возвращает статус и заголовки GET без тела',async()=>{
+  for(const path of ['/','/assets/styles.css','/assets/client.js','/missing','/app/dashboard']){
+    const get=await worker.fetch(new Request('http://localhost'+path),{});
+    const head=await worker.fetch(new Request('http://localhost'+path,{method:'HEAD'}),{});
+    assert.equal(head.status,get.status,path);
+    assert.equal(head.headers.get('content-type'),get.headers.get('content-type'));
+    assert.equal(await head.text(),'');
+  }
+});
 
 test('параметры PostgreSQL сохраняют литералы, идентификаторы и комментарии', () => {
   assert.equal(postgresParameters("SELECT ?, '?' AS \"?\", $$?$$, $body$?$body$ /* ? /* ? */ */ -- ?\n, ?"),

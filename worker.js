@@ -14,7 +14,7 @@ const PRIVATE_ROUTES = {
 };
 
 const worker = {
-  async fetch(request, env) {
+  async dispatch(request, env) {
     const url = new URL(request.url);
     try {
       if (env.DATABASE_URL) env={...env,DB:new NeonAdapter(env.DATABASE_URL)};
@@ -43,6 +43,12 @@ const worker = {
       return json({error:'Не удалось выполнить действие. Повторите позже.'},500);
     }
   }
+};
+
+worker.fetch=async function(request,env){
+  const isHead=request.method==='HEAD';
+  const response=await worker.dispatch(isHead?new Request(request,{method:'GET'}):request,env);
+  return isHead?new Response(null,{status:response.status,headers:response.headers}):response;
 };
 
 export default worker;
