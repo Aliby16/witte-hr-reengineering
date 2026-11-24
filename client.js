@@ -31,8 +31,11 @@ export function clientBootstrap(safeReturnPath) {
   const date = value => value ? new Date(value).toLocaleString('ru-RU',{dateStyle:'short',...(value.includes('T')?{timeStyle:'short'}:{})}) : '—';
   const pill = status => `<span class="pill ${['hired','done','completed','approved'].includes(status)?'success':['new','submitted','todo'].includes(status)?'warning':''}">${esc(statusNames[status]||status)}</span>`;
   const button = (text, action, id='', secondary=false) => `<button type="button" class="${secondary?'secondary':''}" data-action="${action}" data-id="${esc(id)}">${text}</button>`;
-  const input = (label,name,type='text',value='',required=true,extra='') => `<label>${label}<input type="${type}" name="${name}" value="${esc(value)}" ${required?'required':''} ${extra}></label>`;
-  const area = (label,name,value='',required=true) => `<label>${label}<textarea name="${name}" ${required?'required':''}>${esc(value)}</textarea></label>`;
+  const fieldLimits={username:[3,60],password:[1,128],full_name:[5,160],title:[5,160],description:[20,4000],requirements:[10,3000],education:[3,1000],experience:[0,2000],about:[0,2000],cover_letter:[10,2000],evidence:[10,2000],decision_note:[0,2000],justification:[20,2000],format:[3,250],result:[10,2500],name:[2,100],contact:[3,160],topic:[3,160],message:[15,3000],schedule:[0,200],value:[3,500]};
+  const limits=name=>fieldLimits[name]?`minlength="${fieldLimits[name][0]}" maxlength="${fieldLimits[name][1]}"`:'';
+  const help=name=>fieldLimits[name]?`<span class="small muted">${fieldLimits[name][0]?`От ${fieldLimits[name][0]} до`:'До'} ${fieldLimits[name][1]} символов</span>`:'';
+  const input = (label,name,type='text',value='',required=true,extra='') => `<label>${label}<input type="${type}" name="${name}" value="${esc(value)}" ${required?'required':''} ${['text','password','search'].includes(type)?limits(name):''} ${extra}>${['text','password'].includes(type)?help(name):''}</label>`;
+  const area = (label,name,value='',required=true) => `<label>${label}<textarea name="${name}" ${required?'required':''} ${limits(name)}>${esc(value)}</textarea>${help(name)}</label>`;
   const select = (label,name,options,value='') => `<label>${label}<select name="${name}" required>${options.map(([id,text])=>`<option value="${esc(id)}" ${id===value?'selected':''}>${esc(text)}</option>`).join('')}</select></label>`;
   const heading = (title, description='') => `<h1>${esc(title)}</h1>${description?`<p class="lead">${esc(description)}</p>`:''}`;
   const form = (action,body,submit='Сохранить',id='') => `<form class="form" data-form="${action}" data-id="${esc(id)}">${body}<div class="actions"><button type="submit">${submit}</button></div></form>`;
