@@ -49,6 +49,12 @@ async function fixture(t){
   return {env,DB,call,auth};
 }
 
+test('итоговый отказ отменяет оставшиеся запланированные встречи',async t=>{
+  const {call,DB}=await fixture(t);
+  assert.equal((await call('/api/applications/app-1','POST',{version:1,status:'rejected',decision_note:'Квалификация не соответствует требованиям вакансии.'},'hr')).status,200);
+  assert.equal((await DB.prepare('SELECT status FROM interviews WHERE id=?').bind('interview-1').first()).status,'cancelled');
+});
+
 test('перенос встречи сохраняет идентификатор и уведомляет соискателя',async t=>{
   const {call,DB}=await fixture(t);
   assert.equal((await call('/api/interview/interview-1','POST',{action:'reschedule',scheduled_at:'2030-01-11T12:00Z',format:'Видеовстреча'},'hr')).status,200);

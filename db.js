@@ -96,6 +96,7 @@ export async function updateApplication(env, user, row, body) {
     [body.status, note, now(), row.id, row.version]);
   must((changed.meta?.changes || 0) === 1, 'Карточка уже изменена. Обновите страницу.', 409);
   await env.DB.batch([
+    ...(['hired','rejected'].includes(body.status)?[statement(env,"UPDATE interviews SET status='cancelled',result=? WHERE application_id=? AND status='planned'",[body.status==='hired'?'Принято итоговое решение о приёме.':'Принято итоговое решение об отказе.',row.id])]:[]),
     auditStatement(env, user, 'Изменение этапа', 'application', row.id, `${row.status} → ${body.status}: ${note}`),
     notificationStatement(env, row.candidate_id, 'Изменился статус отклика', `Вакансия: ${row.vacancy_title}. Откройте раздел «Мои отклики».`)
   ]);
