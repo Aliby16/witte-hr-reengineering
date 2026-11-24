@@ -4,7 +4,7 @@
 
 Автор: Бисенкулова Алина Владиславовна. Группа: о.ИЗДт 30.3/Б3-22.
 
-Сайт: https://witte-hr-bisenkulova.kseniia-ya.chatgpt.site
+Сайт: https://br-small-resonance-bgwgooob-wittehrbisenkulova.compute.c-9.eu-central-1.aws.neon.tech/
 
 ## Возможности
 
