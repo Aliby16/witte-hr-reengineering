@@ -98,10 +98,20 @@ export async function parseBody(request) {
 
 export function validateDate(value, withTime = false) {
   const text = safeText(value, 40);
-  const pattern = withTime ? /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/ : /^\d{4}-\d{2}-\d{2}$/;
-  must(pattern.test(text) && Number.isFinite(Date.parse(text)), 'Укажите корректную дату.');
-  if (!withTime) must(new Date(text).toISOString().slice(0, 10) === text, 'Такой даты не существует.');
-  return text;
+  const match=text.match(withTime?
+    /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?(Z|[+-]\d{2}:\d{2})?$/:
+    /^(\d{4}-\d{2}-\d{2})$/);
+  must(match,'Укажите корректную дату.');
+  const day=Date.parse(match[1]+'T00:00:00.000Z');
+  must(Number.isFinite(day)&&new Date(day).toISOString().slice(0,10)===match[1], 'Такой даты не существует.');
+  if(!withTime)return match[1];
+  must(Number(match[2])<24&&Number(match[3])<60&&Number(match[4]||0)<60,'Укажите корректное время.');
+  const zone=match[6]||'Z';
+  if(zone!=='Z')must(Number(zone.slice(1,3))<=14&&Number(zone.slice(4))<60&&
+    (Number(zone.slice(1,3))!==14||zone.slice(4)==='00'),'Укажите корректный часовой пояс.');
+  const instant=Date.parse(text+(match[6]?'':'Z'));
+  must(Number.isFinite(instant),'Укажите корректную дату.');
+  return new Date(instant).toISOString();
 }
 
 export function validatedInteger(value, min, max, label) {

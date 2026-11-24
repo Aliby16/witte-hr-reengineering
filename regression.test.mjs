@@ -1,6 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseBody, validatedInteger, safeText } from './security.js';
+import { parseBody, validatedInteger, safeText, validateDate } from './security.js';
+
+test('дата встречи отвергает несуществующие дни, лишний текст и неверное время',()=>{
+  for(const value of ['2026-02-30T10:00','2026-12-01T24:00','2026-12-01T10:00text','2026-12-01T10:61','2026-12-01T10:00+14:30'])
+    assert.throws(()=>validateDate(value,true),error=>error.status===400);
+  assert.equal(validateDate('2028-02-29'),'2028-02-29');
+  assert.equal(validateDate('2026-12-01T10:00+03:00',true),'2026-12-01T07:00:00.000Z');
+  assert.equal(validateDate('2026-12-01T10:00',true),'2026-12-01T10:00:00.000Z');
+});
 
 test('текст нормализует Unicode и удаляет управляющие символы без разрыва эмодзи',()=>{
   assert.equal(safeText('  И\u0306ван\u0000\r\nОтдел\u202E '),'Йван\nОтдел');
