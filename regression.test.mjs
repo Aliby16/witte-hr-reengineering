@@ -62,6 +62,16 @@ test('список сессий содержит только собственн
   assert.equal((await call('/api/sessions')).status,401);
 });
 
+test('завершение других сессий сохраняет текущую и чужую учётную запись',async t=>{
+  const {call,DB}=await fixture(t);
+  await call('/api/login','POST',{username:'candidate',password:DEMO_PASSWORD});
+  await call('/api/me','GET',undefined,'hr');
+  const response=await call('/api/sessions/revoke-others','POST',{},'candidate');
+  assert.equal(response.status,200);assert.equal((await response.json()).revoked,1);
+  assert.equal((await call('/api/me','GET',undefined,'candidate')).status,200);
+  assert.equal((await DB.prepare('SELECT COUNT(*) total FROM sessions WHERE user_id=?').bind('hr').first()).total,1);
+});
+
 test('вход и текущий пользователь сообщают фактическое окончание сессии',async t=>{
   const {call}=await fixture(t);
   const response=await call('/api/me','GET',undefined,'candidate');

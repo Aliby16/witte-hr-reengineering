@@ -16,7 +16,7 @@ export function allowedApiMethods(path){
   if(['/api/me','/api/health','/api/dashboard','/api/sessions'].includes(path)||/^\/api\/(list|export)\//.test(path))return ['GET','HEAD'];
   if(path==='/api/profile'||/^\/api\/(applications|plans)\/[^/]+$/.test(path))return ['GET','HEAD','POST'];
   if(/^\/api\/files\/[^/]+$/.test(path))return ['GET','HEAD'];
-  if(['/api/demo/start','/api/login','/api/logout','/api/applications','/api/vacancies','/api/assessments','/api/interviews','/api/plans','/api/files','/api/requests','/api/feedback'].includes(path)||
+  if(['/api/demo/start','/api/login','/api/logout','/api/sessions/revoke-others','/api/applications','/api/vacancies','/api/assessments','/api/interviews','/api/plans','/api/files','/api/requests','/api/feedback'].includes(path)||
     /^\/api\/(vacancy|interview|withdraw|read-notice|tasks|requests|admin)\//.test(path))return ['POST'];
   return null;
 }
@@ -312,6 +312,12 @@ export async function handleApi(request, env) {
   }
   const additional = await additionalOperations(request, env, user, path);
   if (additional) return additional;
+  if(method==='POST'&&path==='/api/sessions/revoke-others'){
+    requireRole(user,['admin','hr','candidate']);
+    const result=await dbRun(env,'DELETE FROM sessions WHERE user_id=? AND token_hash<>?',[user.id,user.token_hash]);
+    await auditStatement(env,user,'Завершение других сессий','user',user.id).run();
+    return json({ok:true,revoked:result.meta?.changes||0});
+  }
   if (method === 'POST' && path === '/api/logout') {
     if (user) await dbRun(env, 'DELETE FROM sessions WHERE token_hash=?', [user.token_hash]);
     return json({ ok: true }, 200, { 'Set-Cookie': 'witte_session=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0' });

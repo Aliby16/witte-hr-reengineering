@@ -99,7 +99,8 @@ export function clientBootstrap() {
     root.innerHTML=heading('Мой профиль','Укажите образование, профессиональный опыт и сведения о себе.')+
       form('profile',area('Образование','education',profile.education||'')+area('Профессиональный опыт','experience',profile.experience||'')+area('О себе','about',profile.about||'',false)+
         `<label class="checkbox-label"><input type="checkbox" name="consent" ${profile.consent?'checked':''}>Подтверждаю использование данных для демонстрации отклика</label>`,'Сохранить профиль')+
-      '<h2>Активные сессии</h2>'+table(['Сессия','Действует до'],sessions.map(s=>[s.current_session?'Текущая':'Другой вход',date(s.expires_at)]));
+      '<h2>Активные сессии</h2>'+table(['Сессия','Действует до'],sessions.map(s=>[s.current_session?'Текущая':'Другой вход',date(s.expires_at)]))+
+      (sessions.length>1?form('revoke-sessions','','Завершить другие сессии'):'');
   }
   async function showList(page) {
     currentPage=page;
@@ -326,6 +327,7 @@ export function clientBootstrap() {
         await api('/api/login','POST',data);location.assign('/app/dashboard');return;
       }
       if(action==='profile')await api('/api/profile','POST',data);
+      else if(action==='revoke-sessions'){await api('/api/sessions/revoke-others','POST',{});await showProfile();}
       else if(action==='apply'){await api('/api/applications','POST',{...data,vacancy_id:id});closeModal();}
       else if(action==='vacancy'){await api('/api/vacancies','POST',data);closeModal();await showList('vacancies');}
       else if(action==='request'){await api('/api/requests','POST',data);closeModal();await showList('requests');}
