@@ -14,6 +14,7 @@ export function clientBootstrap(safeReturnPath) {
   let user = null;
   let currentRows = [];
   let currentPage = '';
+  let assessmentRevisions=[];
   let recordPage=1,currentView=[];
   const pageSize=20;
   let modalOpener=null,previousOverflow='';
@@ -228,6 +229,7 @@ export function clientBootstrap(safeReturnPath) {
   }
   async function applicationModal(id) {
     const {application:a,assessments,history}=await api(`/api/applications/${encodeURIComponent(id)}`);
+    assessmentRevisions=assessments;
     const transitions={new:['review','rejected'],review:['interview','rejected'],interview:['offer','rejected'],offer:['hired','rejected']};
     let body=`<p><strong>${esc(a.candidate_name)}</strong><br>${esc(a.vacancy_title)}</p><p>${pill(a.status)}</p><p>${esc(a.cover_letter)}</p>`;
     if(a.decision_note) body+=`<p><strong>Обоснование решения:</strong> ${esc(a.decision_note)}</p>`;
@@ -235,7 +237,7 @@ export function clientBootstrap(safeReturnPath) {
     if(user.role_id==='candidate'&&['new','review','interview','offer'].includes(a.status))body+=`<div class="actions">${button('Отозвать отклик','withdraw',a.id,true)}</div>`;
     if(user.role_id!=='candidate') {
       body+=`<h3>Оценка компетенций</h3>`+table(['Компетенция','Оценка','Основание'],assessments.map(s=>[esc(s.title),s.score??'Не заполнена',esc(s.evidence||'')]))+
-        form('assessment',`<input type="hidden" name="application_id" value="${esc(id)}">`+select('Компетенция','competency_id',assessments.map(s=>[s.id,s.title]))+input('Оценка от 0 до 5','score','number',3,true,'min="0" max="5" step="1"')+area('Наблюдаемый результат задания','evidence'),'Сохранить оценку');
+        form('assessment',`<input type="hidden" name="application_id" value="${esc(id)}"><input type="hidden" name="expected_at" value="${esc(assessments[0]?.assessment_updated_at||'')}">`+select('Компетенция','competency_id',assessments.map(s=>[s.id,s.title]))+input('Оценка от 0 до 5','score','number',assessments[0]?.score??3,true,'min="0" max="5" step="1"')+area('Наблюдаемый результат задания','evidence',assessments[0]?.evidence||''),'Сохранить оценку');
       if(transitions[a.status]?.length) body+=`<h3>Изменить этап</h3>`+form('application-status',`<input type="hidden" name="version" value="${a.version}">`+select('Следующий этап','status',transitions[a.status].map(s=>[s,statusNames[s]]))+area('Обоснование решения','decision_note','',false),'Сохранить решение',id);
       if(['review','interview'].includes(a.status)) body+=`<h3>Назначить собеседование</h3>`+form('interview',`<input type="hidden" name="application_id" value="${esc(id)}">`+input('Дата и время','scheduled_at','datetime-local')+input('Формат и место','format','text','Видеовстреча · пример'),'Назначить встречу');
     }
@@ -306,6 +308,11 @@ export function clientBootstrap(safeReturnPath) {
     }
   });
   document.addEventListener('change',event=>{if(event.target.id==='vacancy-department')filterPublicVacancies();if(['record-status','record-role','record-active','record-sort'].includes(event.target.id))filterRecords();});
+  document.addEventListener('change',event=>{
+    if(event.target.name!=='competency_id'||!event.target.closest('[data-form=assessment]'))return;
+    const row=assessmentRevisions.find(s=>s.id===event.target.value),form=event.target.form;
+    form.elements.expected_at.value=row?.assessment_updated_at||'';form.elements.score.value=row?.score??3;form.elements.evidence.value=row?.evidence||'';
+  });
   document.addEventListener('keydown',event=>{
     if(event.key==='Escape') closeModal();
     if(event.key==='Tab'&&$('.modal')) {

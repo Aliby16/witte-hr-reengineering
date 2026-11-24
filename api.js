@@ -172,14 +172,17 @@ async function createAssessment(request, env, user) {
   const score = validatedInteger(body.score, 0, 5, 'Оценка');
   const evidence = safeText(body.evidence, 2000);
   must(evidence.length >= 10, 'Опишите наблюдаемый результат задания: не менее 10 символов.');
-  await env.DB.batch([
-    statement(env,
+  const existing=await dbOne(env,'SELECT created_at FROM assessments WHERE application_id=? AND competency_id=?',[app.id,competency]);
+  must(!existing||body.expected_at===existing.created_at,'Оценка уже изменена. Обновите карточку.',409);
+  const timestamp=new Date(Math.max(Date.now(),Date.parse(existing?.created_at||'')+1||0)).toISOString();
+  const changed=await dbRun(env,
       `INSERT INTO assessments (id,application_id,competency_id,assessor_id,score,evidence,created_at)
        VALUES (?,?,?,?,?,?,?) ON CONFLICT(application_id,competency_id)
-       DO UPDATE SET score=excluded.score,evidence=excluded.evidence,assessor_id=excluded.assessor_id,created_at=excluded.created_at`,
-      [uid('score'), app.id, competency, user.id, score, evidence, now()]),
-    auditStatement(env, user, 'Оценка компетенции', 'application', app.id, `${competency}: ${score}`)
-  ]);
+       DO UPDATE SET score=excluded.score,evidence=excluded.evidence,assessor_id=excluded.assessor_id,created_at=excluded.created_at
+       WHERE assessments.created_at=?`,
+      [uid('score'), app.id, competency, user.id, score, evidence, timestamp,body.expected_at||'']);
+  must(changed.meta?.changes===1,'Оценка уже изменена. Обновите карточку.',409);
+  await auditStatement(env,user,'Оценка компетенции','application',app.id,`${competency}: ${score}`).run();
   return json({ ok: true });
 }
 
@@ -364,7 +367,7 @@ export async function handleApi(request, env) {
       const events=await dbAll(env,'SELECT action,details,created_at FROM audit_events WHERE entity_type=? AND entity_id=? ORDER BY created_at,id',['application',id]);
       const history=user.role_id==='candidate'?events.filter(event=>['Создание отклика','Изменение этапа','Отзыв отклика','Изменение сопроводительного сообщения'].includes(event.action)):events;
       const assessments = user.role_id === 'candidate' ? [] : await dbAll(env,
-        `SELECT c.*,vc.target_level,a.score,a.evidence FROM vacancy_competencies vc
+        `SELECT c.*,vc.target_level,a.score,a.evidence,a.created_at assessment_updated_at FROM vacancy_competencies vc
          JOIN competencies c ON c.id=vc.competency_id
          LEFT JOIN assessments a ON a.competency_id=c.id AND a.application_id=?
          WHERE vc.vacancy_id=? ORDER BY c.title`, [id, row.vacancy_id]);

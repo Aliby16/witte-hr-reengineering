@@ -49,6 +49,15 @@ async function fixture(t){
   return {env,DB,call,auth};
 }
 
+test('устаревшая оценка не перезаписывает результат другого редактора',async t=>{
+  const {call,DB}=await fixture(t);
+  const row=await DB.prepare('SELECT created_at FROM assessments WHERE application_id=? AND competency_id=?').bind('app-1','digital').first();
+  const body={application_id:'app-1',competency_id:'digital',score:5,evidence:'Подробное подтверждение результата задания',expected_at:row.created_at};
+  assert.equal((await call('/api/assessments','POST',body,'hr')).status,200);
+  assert.equal((await call('/api/assessments','POST',{...body,score:1},'hr')).status,409);
+  assert.equal((await DB.prepare('SELECT score FROM assessments WHERE application_id=? AND competency_id=?').bind('app-1','digital').first()).score,5);
+});
+
 test('история отклика скрывает внутренние записи оценки от соискателя',async t=>{
   const {call,DB}=await fixture(t);
   await DB.prepare('INSERT INTO audit_events (id,actor_id,action,entity_type,entity_id,details,created_at) VALUES (?,?,?,?,?,?,?)').bind('internal','hr','Оценка компетенции','application','app-1','Внутренняя запись','2026-01-01').run();
