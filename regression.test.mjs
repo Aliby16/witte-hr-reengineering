@@ -19,6 +19,17 @@ import { NeonAdapter, postgresParameters, postgresRows } from './neon-db.js';
 import { neonConfig } from '@neondatabase/serverless';
 import worker from './worker.js';
 
+test('ошибка содержит номер запроса, а журнал не раскрывает текст SQL',async()=>{
+  const old=console.error,logs=[];console.error=(...args)=>logs.push(args);
+  try{
+    const response=await worker.fetch(new Request('http://localhost/api/me',{headers:{cookie:'witte_session=abc'}}),{DB:{prepare(){throw new Error('postgresql://secret:password@private SELECT sensitive');}}});
+    assert.equal(response.status,500);
+    const body=await response.json();assert.equal(body.request_id,response.headers.get('x-request-id'));
+    assert.doesNotMatch(JSON.stringify(logs),/password|sensitive|postgresql/);
+    assert.match(body.request_id,/^[0-9a-f-]{36}$/);
+  }finally{console.error=old;}
+});
+
 test('метод неподходящего ресурса возвращает 405 и Allow',async()=>{
   for(const [path,method,allow]of [['/','POST','GET, HEAD'],['/api/me','POST','GET, HEAD'],['/api/login','GET','POST'],['/api/profile','DELETE','GET, HEAD, POST']]){
     const response=await worker.fetch(new Request('http://localhost'+path,{method}),{});

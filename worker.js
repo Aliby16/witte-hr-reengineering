@@ -42,17 +42,19 @@ const worker = {
       return new Response(renderShell(url.pathname,user),{headers:responseHeaders('text/html; charset=utf-8')});
     } catch (error) {
       if (error instanceof AppError) return json({error:error.message},error.status);
-      console.error('Application error',error.name,error.message);
+      console.error('Application error',{request_id:env.REQUEST_ID,name:/^[A-Za-z]{1,40}$/.test(error.name||'')?error.name:'Error',code:/^[A-Z0-9]{1,10}$/.test(error.code||'')?error.code:undefined});
       if (/UNIQUE constraint|duplicate key/i.test(error.message||'')) return json({error:'Такая запись уже существует. Обновите страницу.'},409);
-      return json({error:'Не удалось выполнить действие. Повторите позже.'},500);
+      return json({error:'Не удалось выполнить действие. Повторите позже.',request_id:env.REQUEST_ID},500);
     }
   }
 };
 
 worker.fetch=async function(request,env){
   const isHead=request.method==='HEAD';
-  const response=await worker.dispatch(isHead?new Request(request,{method:'GET'}):request,env);
+  const requestId=crypto.randomUUID();
+  const response=await worker.dispatch(isHead?new Request(request,{method:'GET'}):request,{...env,REQUEST_ID:requestId});
   const headers=new Headers(response.headers);
+  headers.set('X-Request-Id',requestId);
   for(const [name,value]of Object.entries(responseHeaders()))if(name!=='Content-Type'&&!headers.has(name))headers.set(name,value);
   return new Response(isHead?null:response.body,{status:response.status,headers});
 };
