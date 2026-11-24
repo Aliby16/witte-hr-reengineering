@@ -142,7 +142,8 @@ async function createVacancy(request, env, user) {
   const department = safeText(body.department_id, 100);
   must(title.length >= 5 && description.length >= 20 && requirements.length >= 10, 'Заполните название, описание и требования к вакансии.');
   must(await dbOne(env, 'SELECT id FROM departments WHERE id=?', [department]), 'Подразделение не найдено.');
-  const status = body.status === 'draft' ? 'draft' : 'published';
+  const status=body.status===undefined?'draft':safeText(body.status,30);
+  must(['draft','published'].includes(status),'При создании доступны черновик и публикация.');
   let requestId = safeText(body.request_id,100) || null;
   if (requestId) {
     const approved = await dbOne(env, "SELECT * FROM requests WHERE id=? AND status='approved'", [requestId]);

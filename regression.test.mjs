@@ -49,6 +49,14 @@ async function fixture(t){
   return {env,DB,call,auth};
 }
 
+test('ошибочный статус вакансии не превращается в публикацию',async t=>{
+  const {call,DB}=await fixture(t);
+  const body={title:'Проверка вакансии',department_id:'it',description:'Подробное описание обязанностей сотрудника',requirements:'Конкретные требования к сотруднику',status:'typo'};
+  assert.equal((await call('/api/vacancies','POST',body,'hr')).status,400);
+  delete body.status;const created=await(await call('/api/vacancies','POST',body,'hr')).json();
+  assert.equal((await DB.prepare('SELECT status FROM vacancies WHERE id=?').bind(created.id).first()).status,'draft');
+});
+
 test('массовое прочтение изменяет только собственные непрочитанные уведомления',async t=>{
   const {call,DB}=await fixture(t);
   await DB.prepare('INSERT INTO notifications (id,user_id,title,body,created_at) VALUES (?,?,?,?,?)').bind('notice-other','candidate','Заголовок','Сообщение','2026-01-01').run();
