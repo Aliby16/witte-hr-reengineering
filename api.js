@@ -80,9 +80,10 @@ async function listPlans(env, user) {
   return dbAll(env,
     `SELECT p.*,u.full_name employee_name,m.full_name mentor_name,
      (SELECT COUNT(*) FROM adaptation_tasks t WHERE t.plan_id=p.id) task_count,
-     (SELECT COUNT(*) FROM adaptation_tasks t WHERE t.plan_id=p.id AND t.status='done') done_count
+     (SELECT COUNT(*) FROM adaptation_tasks t WHERE t.plan_id=p.id AND t.status='done') done_count,
+     (SELECT COUNT(*) FROM adaptation_tasks t WHERE t.plan_id=p.id AND t.status='todo' AND t.due_date< ?) overdue_count
      FROM adaptation_plans p JOIN users u ON u.id=p.employee_id JOIN users m ON m.id=p.mentor_id
-     ${where} ORDER BY p.start_date DESC LIMIT 200`, values);
+     ${where} ORDER BY p.start_date DESC LIMIT 200`, [now().slice(0,10),...values]);
 }
 
 async function dashboard(env, user) {

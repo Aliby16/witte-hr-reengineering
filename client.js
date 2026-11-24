@@ -89,13 +89,13 @@ export function clientBootstrap(safeReturnPath) {
     return `<div class="table-wrap"><table><thead><tr>${headers.map(h=>`<th scope="col">${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.map(row=>`<tr>${row.map(cell=>`<td>${cell}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
   }
   function toolbar(action='',text='Добавить') {
-    const statuses=['applications','reports'].includes(currentPage)?['new','review','interview','offer','hired','rejected','withdrawn']:[];
-    return `<div class="filters"><label>Поиск<input id="search" type="search" placeholder="Название, имя или подразделение"></label>${statuses.length?`<label>Этап<select id="record-status"><option value="">Все этапы</option>${statuses.map(s=>`<option value="${s}">${statusNames[s]}</option>`).join('')}</select></label>`:''}${action?button(text,action):''}</div><div id="records"></div>`;
+    const statuses=['applications','reports'].includes(currentPage)?['new','review','interview','offer','hired','rejected','withdrawn']:currentPage==='plans'?['active','completed','overdue']:[];
+    return `<div class="filters"><label>Поиск<input id="search" type="search" placeholder="Название, имя или подразделение"></label>${statuses.length?`<label>Состояние<select id="record-status"><option value="">Все состояния</option>${statuses.map(s=>`<option value="${s}">${s==='overdue'?'Есть просрочка':statusNames[s]}</option>`).join('')}</select></label>`:''}${action?button(text,action):''}</div><div id="records"></div>`;
   }
   function filterRecords(){
     const query=($('#search')?.value||'').toLocaleLowerCase('ru');
     const status=$('#record-status')?.value||'';
-    drawRecords(currentRows.filter(row=>(!status||row.status===status)&&Object.values(row).some(value=>String(value??'').toLocaleLowerCase('ru').includes(query))));
+    drawRecords(currentRows.filter(row=>(!status||(status==='overdue'?row.status==='active'&&Number(row.overdue_count)>0:row.status===status))&&Object.values(row).some(value=>String(value??'').toLocaleLowerCase('ru').includes(query))));
   }
   function privateNav() {
     if(!user) return;
