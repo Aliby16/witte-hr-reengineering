@@ -14,6 +14,8 @@ export function clientBootstrap(safeReturnPath) {
   let user = null;
   let currentRows = [];
   let currentPage = '';
+  let recordPage=1,currentView=[];
+  const pageSize=20;
   let modalOpener=null,previousOverflow='';
   const statusNames = {
     new:'Новый',review:'На рассмотрении',interview:'Собеседование',offer:'Предложение',hired:'Принят',
@@ -94,6 +96,7 @@ export function clientBootstrap(safeReturnPath) {
     return `<div class="filters"><label>Поиск<input id="search" type="search" placeholder="Название, имя или подразделение"></label>${statuses.length?`<label>Состояние<select id="record-status"><option value="">Все состояния</option>${statuses.map(s=>`<option value="${s}">${s==='overdue'?'Есть просрочка':statusNames[s]}</option>`).join('')}</select></label>`:''}${users}${action?button(text,action):''}</div><div id="records"></div>`;
   }
   function filterRecords(){
+    recordPage=1;
     const query=($('#search')?.value||'').toLocaleLowerCase('ru');
     const status=$('#record-status')?.value||'';
     const role=$('#record-role')?.value||'',active=$('#record-active')?.value??'';
@@ -145,6 +148,7 @@ export function clientBootstrap(safeReturnPath) {
   }
   async function showList(page) {
     currentPage=page;
+    recordPage=1;
     const type=page==='reports'?'applications':page;
     const {rows}=await api(`/api/list/${type}`);
     currentRows=rows;
@@ -159,6 +163,10 @@ export function clientBootstrap(safeReturnPath) {
     drawRecords(rows);
   }
   function drawRecords(rows) {
+    currentView=rows;
+    const totalRows=rows.length,totalPages=Math.max(1,Math.ceil(totalRows/pageSize));
+    recordPage=Math.min(Math.max(recordPage,1),totalPages);
+    rows=rows.slice((recordPage-1)*pageSize,recordPage*pageSize);
     const isStaff=user.role_id!=='candidate';
     let headers=[];
     let cells=[];
@@ -205,7 +213,7 @@ export function clientBootstrap(safeReturnPath) {
       headers=['Имя','Контакт','Тема','Сообщение','Дата'];
       cells=rows.map(f=>[esc(f.name),esc(f.contact),esc(f.topic),esc(f.message),date(f.created_at)]);
     }
-    $('#records').innerHTML=table(headers,cells)+(currentPage==='vacancies'&&user.role_id==='admin'?`<div class="actions">${button('Опубликовать выбранные черновики','bulk-publish','',true)}</div>`:'');
+    $('#records').innerHTML=table(headers,cells)+`<nav class="actions" aria-label="Страницы реестра"><span role="status">Записей: ${totalRows}. Страница ${recordPage} из ${totalPages}</span>${recordPage>1?button('Назад','records-prev','',true):''}${recordPage<totalPages?button('Далее','records-next','',true):''}</nav>`+(currentPage==='vacancies'&&user.role_id==='admin'?`<div class="actions">${button('Опубликовать выбранные черновики','bulk-publish','',true)}</div>`:'');
   }
   async function applicationModal(id) {
     const {application:a,assessments}=await api(`/api/applications/${encodeURIComponent(id)}`);
@@ -307,6 +315,7 @@ export function clientBootstrap(safeReturnPath) {
     target.disabled=true;
     try {
       if(action==='close') closeModal();
+      else if(action==='records-prev'||action==='records-next'){recordPage+=action==='records-next'?1:-1;drawRecords(currentView);$('#records').scrollIntoView({block:'start',behavior:'smooth'});}
       else if(action==='demo-login') {
         await api('/api/demo/start','POST',{});
         await api('/api/login','POST',{username:id,password:'WitteDemo2026!'});
